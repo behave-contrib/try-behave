@@ -1,13 +1,16 @@
+/* Copyright (c) 2021-present Tomra Systems ASA */
 /* eslint-disable import/no-webpack-loader-syntax */
 import React, { Component } from "react";
 import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/ext-language_tools";
+import "ace-builds/src-noconflict/ext-searchbox";
 import "ace-builds/src-noconflict/mode-gherkin";
 import "ace-builds/src-noconflict/theme-github";
-import "ace-builds/src-noconflict/ext-searchbox";
-import "ace-builds/src-noconflict/ext-language_tools";
+import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 import workerUrl from "worker-plugin/loader!../ws.worker.js";
+import PrettyBox from "./PrettyBox";
 import SimpleTerminal from "./SimpleTerminal";
-
 
 class FeatureHolder extends Component {
     constructor() {
@@ -17,7 +20,7 @@ class FeatureHolder extends Component {
         this.state = {
             code: `@example
 Feature: Documentation feature
-        
+
 As a tester, I read the documentation so that I can get things done
 
 Scenario: Read Behave documentation
@@ -31,15 +34,16 @@ Scenario: Read Behave documentation
 
     componentDidMount() {
         this.worker = new Worker(workerUrl);
+        this.terminal.current.clearStdout();
         this.worker.postMessage({ type: "doinit" });
         this.worker.onmessage = (e) => {
-            if (e.data.type === "log"){
+            if (e.data.type === "log") {
                 console.log(e.data.msg)
             }
-            if (e.data.type === "ready"){
+            if (e.data.type === "ready") {
                 this.worker.postMessage({ type: "run", msg: "runit" });
             }
-            if (e.data.type === "terminal"){
+            if (e.data.type === "terminal") {
                 const lines = e.data.msg.split("\n");
                 for (const line of lines) {
                     this.terminal.current.pushToStdout(line)
@@ -53,9 +57,9 @@ Scenario: Read Behave documentation
         return (
             <div>
                 <div id="codeDiv" style={{ display: "none" }}>
-                {this.state.code}
+                    {this.state.code}
                 </div>
-                <div className="container-fluid" style={{margin: 5}}>
+                <div className="container-fluid" style={{ margin: 5 }}>
                     <div className="row">
                         <div className="col-8">
                             <AceEditor
@@ -74,7 +78,22 @@ Scenario: Read Behave documentation
                             />
                         </div>
                         <div>
-                            <SimpleTerminal ref={this.terminal}></SimpleTerminal>
+                            <Tabs forceRenderTabPanel={true}>
+                                <TabList>
+                                    <Tab>Test step impl.</Tab>
+                                    <Tab>Console log</Tab>
+                                </TabList>
+                                <TabPanel>
+                                    <PrettyBox
+                                        code={"@step('I do stuff')\ndef do_stuff(context):\n\tpass"}
+                                        fileName={"# blabla/bla.py"}
+                                        key={1}
+                                    />
+                                </TabPanel>
+                                <TabPanel>
+                                    <SimpleTerminal ref={this.terminal}></SimpleTerminal>
+                                </TabPanel>
+                            </Tabs>
                         </div>
                     </div>
                 </div>

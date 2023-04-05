@@ -1,8 +1,44 @@
-.App {
-  text-align: center;
+/* Copyright (c) 2021-present Tomra Systems ASA */
+body {
+    margin: 5;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.ace_editor{
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+        monospace;
+}
+
+.ace_editor {
     background: #eeffcc !important;
     border: 1px solid lightgray;
-  }
+}
+
+pre {
+    white-space: pre-wrap;
+    tab-size: 2;
+    font-family: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console",
+        "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono",
+        "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+    font-size: 12px;
+}
+
+pre.prettyprint {
+    padding: 2px;
+    border: 1px solid #888;
+}
+
+pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 0em;
+}
+
+.ace_editor.ace_autocomplete {
+    width: 1000px;
+}

@@ -1,3 +1,4 @@
+/* Copyright (c) 2021-present Tomra Systems ASA */
 import React, { Component } from "react";
 
 const LogLine = ({id, logText}) => {
@@ -48,7 +49,6 @@ class SimpleTerminal extends Component {
 
     render() {
         const consoleStyle = {
-            textAlign: "left",
             backgroundColor: "black",
             color: "white",
             fontFamily: "monospace",
