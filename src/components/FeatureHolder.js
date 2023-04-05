@@ -18,7 +18,8 @@ class FeatureHolder extends Component {
         super();
         // Set initial state
         this.state = {
-            read: false,
+            ready: false,
+            selectedTab: 0,
             code: `@example
 Feature: Documentation feature
 
@@ -31,7 +32,6 @@ Scenario: Read Behave documentation
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
-        this.tabs = React.createRef();
     }
 
     componentDidMount() {
@@ -56,7 +56,12 @@ Scenario: Read Behave documentation
 
     runFeature() {
         this.terminal.current.clearStdout()
+        this.setState({selectedTab: 1})
         this.worker.postMessage({ type: "run", msg: "runit" });
+    }
+
+    setTabIndex(tabIndex) {
+        this.setState({selectedTab: tabIndex})
     }
 
     render() {
@@ -93,7 +98,9 @@ Scenario: Read Behave documentation
                             </button>
                         </div>
                         <div>
-                            <Tabs forceRenderTabPanel={true} ref={this.tabs}>
+                            <Tabs forceRenderTabPanel={true}
+                                  selectedIndex={this.state.selectedTab}
+                                  onSelect={this.setTabIndex.bind(this)}>
                                 <TabList>
                                     <Tab>Test step impl.</Tab>
                                     <Tab>Console log</Tab>

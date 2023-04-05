@@ -10,6 +10,18 @@ async function loadPyodideAndPackages() {
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
 
+runFeatures = (args, messageType) => {
+    self.pyodide.runPython(`
+    import sys
+    import io
+    sys.stdout = io.StringIO()
+    from behave.__main__ import main as behave_main
+    behave_main(${args})
+    `);
+    let stdout = self.pyodide.runPython("sys.stdout.getvalue()")
+    postMessage({ type: messageType, msg: stdout });
+}
+
 self.onmessage = async (e) => {
     if(e.data.type === "doinit") {
         await pyodideReadyPromise;
@@ -27,14 +39,6 @@ self.onmessage = async (e) => {
         with open("features/steps/documentation.py", "w") as fh:
             fh.write(base64.b64decode(encoded_steps).decode("utf-8"))
         `);
-        resolve();
-        postMessage({ type: "log", msg: "initialization done!" });
-        postMessage({ type: "ready" });
-
-    })
-    }
-    if (e.data.type === "run") {
-        await behaveReadyPromise;
         self.pyodide.runPython(`
         with open("features/documentation.feature", "w") as fh:
             fh.write("""@example
@@ -48,14 +52,17 @@ self.onmessage = async (e) => {
                         Then I do a lot
                 """)
         `);
-        pyodide.runPython(`
-        import sys
-        import io
-        sys.stdout = io.StringIO()
-        from behave.__main__ import main as behave_main
-        behave_main(["--no-capture", "--i", "features/documentation.feature"])
-        `);
-        let stdout = pyodide.runPython("sys.stdout.getvalue()")
-        postMessage({ type: "terminal", msg: stdout });
+        resolve();
+        postMessage({ type: "log", msg: "initialization done!" });
+        postMessage({ type: "ready" });
+        })
+    }
+    if (e.data.type === "run") {
+        await behaveReadyPromise;
+        runFeatures(`["--no-capture", "-i", "features/documentation.feature"]`, "terminal")
+    }
+    if (e.data.type === "snippets"){
+        await behaveReadyPromise;
+        runFeatures(`["--no-capture", "-d", "-i", "features/documentation.feature"]`, "snippet")
     }
 };
