@@ -18,6 +18,7 @@ class FeatureHolder extends Component {
         super();
         // Set initial state
         this.state = {
+            read: false,
             code: `@example
 Feature: Documentation feature
 
@@ -30,27 +31,32 @@ Scenario: Read Behave documentation
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
+        this.tabs = React.createRef();
     }
 
     componentDidMount() {
         this.worker = new Worker(workerUrl);
         this.terminal.current.clearStdout();
-        this.worker.postMessage({ type: "doinit" });
+        this.worker.postMessage({ type: "doinit", baseurl: window.location.origin });
         this.worker.onmessage = (e) => {
             if (e.data.type === "log") {
                 console.log(e.data.msg)
             }
             if (e.data.type === "ready") {
-                this.worker.postMessage({ type: "run", msg: "runit" });
+                this.setState({ready: true})
             }
             if (e.data.type === "terminal") {
                 const lines = e.data.msg.split("\n");
                 for (const line of lines) {
                     this.terminal.current.pushToStdout(line)
                 }
-                console.log(e.data.msg)
             }
         }
+    }
+
+    runFeature() {
+        this.terminal.current.clearStdout()
+        this.worker.postMessage({ type: "run", msg: "runit" });
     }
 
     render() {
@@ -78,7 +84,16 @@ Scenario: Read Behave documentation
                             />
                         </div>
                         <div>
-                            <Tabs forceRenderTabPanel={true}>
+                        <button
+                            className="btn btn-primary btn-sm"
+                            disabled={!this.state.ready}
+                            onClick={this.runFeature.bind(this)}
+                            >
+                            Run feature
+                            </button>
+                        </div>
+                        <div>
+                            <Tabs forceRenderTabPanel={true} ref={this.tabs}>
                                 <TabList>
                                     <Tab>Test step impl.</Tab>
                                     <Tab>Console log</Tab>

@@ -15,7 +15,7 @@ self.onmessage = async (e) => {
         await pyodideReadyPromise;
         await self.pyodide.loadPackage("micropip");
         const micropip = self.pyodide.pyimport("micropip");
-        await micropip.install("http://localhost:3000/parse-1.19.0-py3-none-any.whl");
+        await micropip.install(`${e.data.baseurl}/parse-1.19.0-py3-none-any.whl`);
         await micropip.install("behave");
         behaveReadyPromise = new Promise((resolve) => {
         // make sure loading is done
@@ -53,7 +53,7 @@ self.onmessage = async (e) => {
         import io
         sys.stdout = io.StringIO()
         from behave.__main__ import main as behave_main
-        behave_main("--no-capture")
+        behave_main(["--no-capture", "--i", "features/documentation.feature"])
         `);
         let stdout = pyodide.runPython("sys.stdout.getvalue()")
         postMessage({ type: "terminal", msg: stdout });
