@@ -1,0 +1,8 @@
+.App {
+  text-align: center;
+}
+
+.ace_editor{
+    background: #eeffcc !important;
+    border: 1px solid lightgray;
+  }

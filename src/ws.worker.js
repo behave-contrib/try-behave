@@ -1,39 +1,43 @@
-<!doctype html>
-<html>
-  <head>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js"></script>
-  </head>
-  <body>
-    <br />
-    <br />
-    <div>Output:</div>
-    <textarea id="output" style="width: 100%;" rows="30" disabled></textarea>
-    <script type="text/javascript">
-      const output = document.getElementById("output");
-      output.value = ""
 
-      function addToOutput(s) {
-        output.value += s + "\n";
-      }
+/* eslint-disable no-undef */
+/* eslint-disable no-restricted-globals */
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
-      async function main(){
-        let pyodide = await loadPyodide();
-        await pyodide.loadPackage("micropip");
-        const micropip = pyodide.pyimport("micropip");
-        await micropip.install("http://localhost:8000/lib/parse-1.19.0-py3-none-any.whl");
+async function loadPyodideAndPackages() {
+    self.pyodide = await loadPyodide();
+  await self.pyodide.loadPackage(["numpy", "pytz"]);
+}
+let pyodideReadyPromise = loadPyodideAndPackages();
+let behaveReadyPromise = null;
+
+self.onmessage = async (e) => {
+    if(e.data.type === "doinit") {
+        await pyodideReadyPromise;
+        await self.pyodide.loadPackage("micropip");
+        const micropip = self.pyodide.pyimport("micropip");
+        await micropip.install("http://localhost:3000/parse-1.19.0-py3-none-any.whl");
         await micropip.install("behave");
-        pyodide.FS.mkdir("features");
-        pyodide.FS.mkdir("features/steps");
-        pyodide.runPython(`
+        behaveReadyPromise = new Promise((resolve) => {
+        // make sure loading is done
+        self.pyodide.FS.mkdir("features");
+        self.pyodide.FS.mkdir("features/steps");
+        self.pyodide.runPython(`
         import base64
         encoded_steps = "ZnJvbSBiZWhhdmUgaW1wb3J0IHN0ZXAKZnJvbSB1cmxsaWIucmVxdWVzdCBpbXBvcnQgdXJsb3BlbgoKQHN0ZXAodSdJIGRvIG5vdCBkbyBtdWNoJykKZGVmIHN0ZXBfaW1wbChjb250ZXh0KToKICAgIHByaW50KCJOb3RoaW5nIG11Y2ggaGFwcGVuaW5nIGhlcmUiKQoKCkBzdGVwKHUnSSBkbyBhIGxvdCcpCmRlZiBzdGVwX2ltcGwoY29udGV4dCk6CiAgICBwcmludCgiVG9vIG11Y2ggaGFwcGVuaW5nIGhlcmUiKQoKCkBzdGVwKHUnSSByZWFkIHRoZSByZWFkbWUnKQpkZWYgc3RlcF9pbXBsKGNvbnRleHQpOgogICAgdXJsID0gImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9iZWhhdmUvYmVoYXZlL21hc3Rlci9SRUFETUUucnN0IgogICAgcmVhZG1lID0gdXJsb3Blbih1cmwpCiAgICBtc2cgPSAiIi5qb2luKG5leHQocmVhZG1lKS5kZWNvZGUoInV0Zi04IikgZm9yIF94IGluIHJhbmdlKDEwKSkKICAgIHByaW50KG1zZykK"
         with open("features/steps/documentation.py", "w") as fh:
             fh.write(base64.b64decode(encoded_steps).decode("utf-8"))
         `);
-        pyodide.runPython(`
+        resolve();
+        postMessage({ type: "log", msg: "initialization done!" });
+        postMessage({ type: "ready" });
+
+    })
+    }
+    if (e.data.type === "run") {
+        await behaveReadyPromise;
+        self.pyodide.runPython(`
         with open("features/documentation.feature", "w") as fh:
-            fh.write("""
-                @example
+            fh.write("""@example
                 Feature: Documentation feature
 
                     As a tester, I read the documentation so that I can get things done
@@ -52,9 +56,6 @@
         behave_main("--no-capture")
         `);
         let stdout = pyodide.runPython("sys.stdout.getvalue()")
-        addToOutput(stdout);
-      }
-      main();
-    </script>
-  </body>
-</html>
+        postMessage({ type: "terminal", msg: stdout });
+    }
+};
