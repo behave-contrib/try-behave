@@ -10,7 +10,7 @@ async function loadPyodideAndPackages() {
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
 
-runFeatures = (args) => {
+const runFeatures = (args) => {
     self.pyodide.runPython(`
     import sys
     import io
@@ -21,7 +21,7 @@ runFeatures = (args) => {
     return self.pyodide.runPython("sys.stdout.getvalue()")
 }
 
-getFeatureJson = (feature) => {
+const getFeatureJson = (feature) => {
     runFeatures(`["-i", "features/${feature}", "--f=json", "--dry-run", "--no-summary",
     "--no-snippets", "-o", "reports/feature.json"]`)
     self.pyodide.runPython(`import json
@@ -74,7 +74,7 @@ self.onmessage = async (e) => {
         await pyodideReadyPromise;
         await self.pyodide.loadPackage("micropip");
         const micropip = self.pyodide.pyimport("micropip");
-        await micropip.install(`${e.data.baseurl}/parse-1.19.0-py3-none-any.whl`);
+        await micropip.install(`${e.data.baseurl}/trybehave/parse-1.19.0-py3-none-any.whl`);
         await micropip.install("behave");
         behaveReadyPromise = new Promise((resolve) => {
         // make sure loading is done
