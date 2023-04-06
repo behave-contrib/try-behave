@@ -25,39 +25,52 @@ getFeatureJson = (feature) => {
     runFeatures(`["-i", "features/${feature}", "--f=json", "--dry-run", "--no-summary",
     "--no-snippets", "-o", "reports/feature.json"]`)
     self.pyodide.runPython(`import json
-json_file = open("reports/feature.json")
-with open("reports/feature.json", "r") as file:
-    data = file.read()
-print(data)
-report = json.loads(data)
-locations = []
-for step in report[0]["elements"][0]["steps"]:
-    locations.append(step["match"]["location"])
-snippets = []
-for location in locations:
-    parts = location.split(":")
-    filename = parts[0]
-    line_no = parts[1]
-    file_lines = []
-    with open(filename, "r") as source_file:
-        file_lines = source_file.readlines()
-    func_to_end = file_lines[int(line_no) -1:]
-    func_lines = []
-    for i in range(len(func_to_end) -1):
-        if len(func_to_end[i].strip()) == 0:
-            if i + 1 < len(func_to_end):
-                if len(func_to_end[i].strip()) == 0:
-                    break
-        func_lines.append(func_to_end[i])
-    snippets.append({"location": location, "file_lines": "".join(func_lines)})
-    global snippet_json
-    snippet_json = json.dumps(snippets)
+def get_json_step_report():
+    json_file = open("reports/feature.json")
+    with open("reports/feature.json", "r") as file:
+        data = file.read()
+    return json.loads(data)
+
+def get_step_locations():
+    report = get_json_step_report()
+    locations = []
+    for step in report[0]["elements"][0]["steps"]:
+        locations.append(step["match"]["location"])
+    return locations
+
+def is_empty_line(line):
+    return len(line.strip()) == 0
+
+def get_snippets():
+    locations = get_step_locations()
+    snippets = []
+    for location in locations:
+        parts = location.split(":")
+        filename = parts[0]
+        line_no = parts[1]
+        file_lines = []
+        with open(filename, "r") as source_file:
+            file_lines = source_file.readlines()
+        func_to_end = file_lines[int(line_no) -1:]
+        func_lines = []
+        for i in range(len(func_to_end) -1):
+            if is_empty_line(func_to_end[i]):
+                if i + 1 < len(func_to_end):
+                    if is_empty_line(func_to_end[i + 1]):
+                        break
+            func_lines.append(func_to_end[i])
+        snippets.append({"location": location, "file_lines": "".join(func_lines)})
+    return snippets
+
+snippets = get_snippets()
+global snippet_json
+snippet_json = json.dumps(snippets)
 `)
     return self.pyodide.globals.get("snippet_json");
 }
 
 self.onmessage = async (e) => {
-    if(e.data.type === "doinit") {
+    if(e.data.type === "init") {
         await pyodideReadyPromise;
         await self.pyodide.loadPackage("micropip");
         const micropip = self.pyodide.pyimport("micropip");

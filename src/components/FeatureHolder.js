@@ -38,7 +38,7 @@ Scenario: Read Behave documentation
     componentDidMount() {
         this.worker = new Worker(workerUrl);
         this.terminal.current.clearStdout();
-        this.worker.postMessage({ type: "doinit", baseurl: window.location.origin });
+        this.worker.postMessage({ type: "init", baseurl: window.location.origin });
         this.worker.onmessage = (e) => {
             if (e.data.type === "log") {
                 console.log(e.data.msg)
