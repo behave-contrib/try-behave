@@ -20,6 +20,7 @@ class FeatureHolder extends Component {
         this.state = {
             ready: false,
             selectedTab: 0,
+            snippets: [],
             code: `@example
 Feature: Documentation feature
 
@@ -44,6 +45,7 @@ Scenario: Read Behave documentation
             }
             if (e.data.type === "ready") {
                 this.setState({ready: true})
+                this.worker.postMessage({ type: "snippets"})
             }
             if (e.data.type === "terminal") {
                 const lines = e.data.msg.split("\n");
@@ -51,13 +53,17 @@ Scenario: Read Behave documentation
                     this.terminal.current.pushToStdout(line)
                 }
             }
+            if (e.data.type === "snippet"){
+                const snippets = JSON.parse(e.data.msg);
+                this.setState({ snippets: snippets })
+            }
         }
     }
 
     runFeature() {
         this.terminal.current.clearStdout()
         this.setState({selectedTab: 1})
-        this.worker.postMessage({ type: "run", msg: "runit" });
+        this.worker.postMessage({ type: "run" });
     }
 
     setTabIndex(tabIndex) {
@@ -65,6 +71,16 @@ Scenario: Read Behave documentation
     }
 
     render() {
+        const Snippets = () => {
+            let count = -1;
+            return this.state.snippets.map(snippet => {
+               return  <PrettyBox
+                        code={snippet.file_lines}
+                        fileName={`# ${snippet.location}`}
+                        key={++count}
+            />
+            })
+        }
         return (
             <div>
                 <div id="codeDiv" style={{ display: "none" }}>
@@ -106,11 +122,7 @@ Scenario: Read Behave documentation
                                     <Tab>Console log</Tab>
                                 </TabList>
                                 <TabPanel>
-                                    <PrettyBox
-                                        code={"@step('I do stuff')\ndef do_stuff(context):\n\tpass"}
-                                        fileName={"# blabla/bla.py"}
-                                        key={1}
-                                    />
+                                    <Snippets />
                                 </TabPanel>
                                 <TabPanel>
                                     <SimpleTerminal ref={this.terminal}></SimpleTerminal>

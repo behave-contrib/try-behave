@@ -10,7 +10,7 @@ async function loadPyodideAndPackages() {
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
 
-runFeatures = (args, messageType) => {
+runFeatures = (args) => {
     self.pyodide.runPython(`
     import sys
     import io
@@ -18,8 +18,42 @@ runFeatures = (args, messageType) => {
     from behave.__main__ import main as behave_main
     behave_main(${args})
     `);
-    let stdout = self.pyodide.runPython("sys.stdout.getvalue()")
-    postMessage({ type: messageType, msg: stdout });
+    return self.pyodide.runPython("sys.stdout.getvalue()")
+}
+
+getFeatureJson = (feature) => {
+    runFeatures(`["-i", "features/${feature}", "--f=json", "--dry-run", "--no-summary",
+    "--no-snippets", "-o", "reports/feature.json"]`)
+    self.pyodide.runPython(`import json
+json_file = open("reports/feature.json")
+with open("reports/feature.json", "r") as file:
+    data = file.read()
+print(data)
+report = json.loads(data)
+locations = []
+for step in report[0]["elements"][0]["steps"]:
+    locations.append(step["match"]["location"])
+snippets = []
+for location in locations:
+    parts = location.split(":")
+    filename = parts[0]
+    line_no = parts[1]
+    file_lines = []
+    with open(filename, "r") as source_file:
+        file_lines = source_file.readlines()
+    func_to_end = file_lines[int(line_no) -1:]
+    func_lines = []
+    for i in range(len(func_to_end) -1):
+        if len(func_to_end[i].strip()) == 0:
+            if i + 1 < len(func_to_end):
+                if len(func_to_end[i].strip()) == 0:
+                    break
+        func_lines.append(func_to_end[i])
+    snippets.append({"location": location, "file_lines": "".join(func_lines)})
+    global snippet_json
+    snippet_json = json.dumps(snippets)
+`)
+    return self.pyodide.globals.get("snippet_json");
 }
 
 self.onmessage = async (e) => {
@@ -31,6 +65,7 @@ self.onmessage = async (e) => {
         await micropip.install("behave");
         behaveReadyPromise = new Promise((resolve) => {
         // make sure loading is done
+        self.pyodide.FS.mkdir("reports");
         self.pyodide.FS.mkdir("features");
         self.pyodide.FS.mkdir("features/steps");
         self.pyodide.runPython(`
@@ -48,7 +83,6 @@ self.onmessage = async (e) => {
 
                     Scenario: Read Behave documentation
                         Given I do not do much
-                        # When I read the readme
                         Then I do a lot
                 """)
         `);
@@ -59,10 +93,13 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;
-        runFeatures(`["--no-capture", "-i", "features/documentation.feature"]`, "terminal")
+        const stdout = runFeatures(`["--no-capture", "-i", "features/documentation.feature"]`)
+        postMessage({ type: "terminal", msg: stdout });
+
     }
     if (e.data.type === "snippets"){
         await behaveReadyPromise;
-        runFeatures(`["--no-capture", "-d", "-i", "features/documentation.feature"]`, "snippet")
+        const step_impls = getFeatureJson("documentation.feature")
+        postMessage({ type: "snippet", msg: step_impls });
     }
 };
