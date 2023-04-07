@@ -170,7 +170,7 @@ class FeatureHolder extends Component {
                 onClick={this.saveCode.bind(this)}
                 style={{ backgroundColor: "lightcoral" }}
               >
-                Save feature
+                Save file
               </button>&nbsp;</span>
               );
           }
