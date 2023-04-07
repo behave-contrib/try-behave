@@ -9,4 +9,3 @@ def step_impl(context):
 @step('I do a lot')
 def step_impl(context):
     print("Too much happening here")
-

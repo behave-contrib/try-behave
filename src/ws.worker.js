@@ -53,7 +53,7 @@ def get_snippets():
             file_lines = source_file.readlines()
         func_to_end = file_lines[int(line_no) -1:]
         func_lines = []
-        for i in range(len(func_to_end) -1):
+        for i in range(len(func_to_end)):
             if is_empty_line(func_to_end[i]):
                 if i + 1 < len(func_to_end):
                     if is_empty_line(func_to_end[i + 1]):
