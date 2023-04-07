@@ -94,6 +94,7 @@ class FeatureHolder extends Component {
             }
             if (e.data.type === "ready"){
                 this.setState({ draft: false });
+                this.worker.postMessage({ type: "snippets" })
             }
         }
         this.loadFile();
@@ -181,7 +182,7 @@ class FeatureHolder extends Component {
                 <div className="container-fluid" style={{ margin: 5 }}>
                     <div className="row">
                         <div className="col-1">
-                            <label>Select file:</label>
+                            <label style={{ fontWeight: 600 }}>Select file:</label>
                         </div>
                         <div className="col-4">
                             <select id="filfilter"
