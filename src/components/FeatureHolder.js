@@ -17,22 +17,39 @@ class FeatureHolder extends Component {
         // Pass props to parent class
         super();
         // Set initial state
+        this.fileOptions = ["features/documentation.feature",
+                            "features/steps/documentation.py"]
         this.state = {
+            selectedFile: this.fileOptions[0],
             ready: false,
             selectedTab: 0,
             snippets: [],
-            code: `@example
-Feature: Documentation feature
-
-As a tester, I read the documentation so that I can get things done
-
-Scenario: Read Behave documentation
-    Given I do not do much
-    Then I do a lot
-`
+            code: ""
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
+    }
+
+    getSelectedFile() {
+        fetch(`${window.location.origin}/trybehave/${this.state.selectedFile}`)
+        .then(resp => {
+            resp.text().then(text => {
+                console.log(`Loaded ${this.state.selectedFile}`);
+                this.setState({code: text});
+            })
+        });
+    }
+
+    createFiles(worker) {
+        this.fileOptions.forEach(file => {
+            fetch(`${window.location.origin}/trybehave/${file}`)
+            .then(resp => {
+                resp.text().then(text => {
+                    console.log(`Retrieved ${file}`);
+                    worker.postMessage({ type: "file", filename: file, content: text })
+                })
+            });
+        });
     }
 
     componentDidMount() {
@@ -43,9 +60,9 @@ Scenario: Read Behave documentation
             if (e.data.type === "log") {
                 console.log(e.data.msg)
             }
-            if (e.data.type === "ready") {
-                this.setState({ready: true})
-                this.worker.postMessage({ type: "snippets"})
+            if (e.data.type === "init") {
+                this.createFiles(this.worker);
+                this.worker.postMessage({ type: "snippets" })
             }
             if (e.data.type === "terminal") {
                 const lines = e.data.msg.split("\n");
@@ -53,34 +70,44 @@ Scenario: Read Behave documentation
                     this.terminal.current.pushToStdout(line)
                 }
             }
-            if (e.data.type === "snippet"){
+            if (e.data.type === "snippet") {
                 const snippets = JSON.parse(e.data.msg);
                 this.setState({ snippets: snippets })
+                this.setState({ ready: true })
             }
         }
+        this.getSelectedFile();
     }
 
     runFeature() {
         this.terminal.current.clearStdout()
-        this.setState({selectedTab: 1})
-        this.worker.postMessage({ type: "run" });
+        this.setState({ selectedTab: 1 })
+        this.worker.postMessage({ type: "run", filename: this.state.selectedFile });
     }
 
     setTabIndex(tabIndex) {
-        this.setState({selectedTab: tabIndex})
+        this.setState({ selectedTab: tabIndex })
+    }
+
+    fileSelectionChanged(event) {
     }
 
     render() {
         const Snippets = () => {
             let count = -1;
             return this.state.snippets.map(snippet => {
-               return  <PrettyBox
-                        code={snippet.file_lines}
-                        fileName={`# ${snippet.location}`}
-                        key={++count}
-            />
+                return <PrettyBox
+                    code={snippet.file_lines}
+                    fileName={`# ${snippet.location}`}
+                    key={++count}
+                />
             })
         }
+
+        const fileOptionItems = this.fileOptions.map(opt => (
+            <option key={opt}>{opt}</option>
+        ));
+
         return (
             <div>
                 <div id="codeDiv" style={{ display: "none" }}>
@@ -88,6 +115,16 @@ Scenario: Read Behave documentation
                 </div>
                 <div className="container-fluid" style={{ margin: 5 }}>
                     <div className="row">
+                        <div className="col-1">
+                            <label>Select file:</label>
+                        </div>
+                        <div className="col-4">
+                            <select id="filfilter"
+                                style={{ marginBottom: 5 }}
+                                onChange={this.fileSelectionChanged.bind(this)}>
+                                {fileOptionItems}
+                            </select>
+                        </div>
                         <div className="col-8">
                             <AceEditor
                                 ref={this.editor}
@@ -105,18 +142,18 @@ Scenario: Read Behave documentation
                             />
                         </div>
                         <div>
-                        <button
-                            className="btn btn-primary btn-sm"
-                            disabled={!this.state.ready}
-                            onClick={this.runFeature.bind(this)}
+                            <button
+                                className="btn btn-primary btn-sm"
+                                disabled={!this.state.ready}
+                                onClick={this.runFeature.bind(this)}
                             >
-                            Run feature
+                                Run feature
                             </button>
                         </div>
                         <div>
                             <Tabs forceRenderTabPanel={true}
-                                  selectedIndex={this.state.selectedTab}
-                                  onSelect={this.setTabIndex.bind(this)}>
+                                selectedIndex={this.state.selectedTab}
+                                onSelect={this.setTabIndex.bind(this)}>
                                 <TabList>
                                     <Tab>Test step impl.</Tab>
                                     <Tab>Console log</Tab>
