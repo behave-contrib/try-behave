@@ -89,6 +89,7 @@ self.onmessage = async (e) => {
     if (e.data.type === "file"){
         self.pyodide.runPython(`with open("${e.data.filename}", "w") as fh:
             fh.write("""${e.data.content}""")`)
+        postMessage({ type: "ready" });
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;

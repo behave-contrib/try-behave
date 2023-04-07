@@ -19,40 +19,58 @@ class FeatureHolder extends Component {
         // Set initial state
         this.fileOptions = ["features/documentation.feature",
                             "features/steps/documentation.py"]
+        this.modifiedFiles = []
         this.state = {
+            initializing: false,
             selectedFile: this.fileOptions[0],
             ready: false,
             selectedTab: 0,
             snippets: [],
-            code: ""
+            code: "",
+            draft: false
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
+        this.worker = null;
     }
 
-    getSelectedFile() {
-        fetch(`${window.location.origin}/trybehave/${this.state.selectedFile}`)
-        .then(resp => {
-            resp.text().then(text => {
-                console.log(`Loaded ${this.state.selectedFile}`);
-                this.setState({code: text});
-            })
-        });
+    loadFile(file=null) {
+        if(!file){
+            file = this.state.selectedFile;
+        }
+        const modifiedFile = this.findModifiedFile(file);
+        if (modifiedFile) {
+            console.log(`Loaded file with existing changes ${file}`);
+            this.setState({code: modifiedFile.content});
+        } else {
+            fetch(`${window.location.origin}/trybehave/${file}`)
+            .then(resp => {
+                resp.text().then(text => {
+                    console.log(`Loaded ${file}`);
+                    this.setState({code: text});
+                })
+            });
+        }
     }
 
     createFiles(worker) {
+        let fileCount = 0
         this.fileOptions.forEach(file => {
             fetch(`${window.location.origin}/trybehave/${file}`)
             .then(resp => {
                 resp.text().then(text => {
                     console.log(`Retrieved ${file}`);
                     worker.postMessage({ type: "file", filename: file, content: text })
+                    fileCount++;
+                    if(fileCount === this.fileOptions.length){
+                        this.worker.postMessage({ type: "snippets" })
+                    }
                 })
             });
         });
     }
 
-    componentDidMount() {
+    init() {
         this.worker = new Worker(workerUrl);
         this.terminal.current.clearStdout();
         this.worker.postMessage({ type: "init", baseurl: window.location.origin });
@@ -62,7 +80,6 @@ class FeatureHolder extends Component {
             }
             if (e.data.type === "init") {
                 this.createFiles(this.worker);
-                this.worker.postMessage({ type: "snippets" })
             }
             if (e.data.type === "terminal") {
                 const lines = e.data.msg.split("\n");
@@ -75,8 +92,18 @@ class FeatureHolder extends Component {
                 this.setState({ snippets: snippets })
                 this.setState({ ready: true })
             }
+            if (e.data.type === "ready"){
+                this.setState({ draft: false });
+            }
         }
-        this.getSelectedFile();
+        this.loadFile();
+    }
+
+    componentDidMount() {
+        if(!this.state.initializing) {
+            this.setState({initializing: true})
+            this.init();
+        }
     }
 
     runFeature() {
@@ -90,9 +117,37 @@ class FeatureHolder extends Component {
     }
 
     fileSelectionChanged(event) {
+        const file = event.target.value;
+        this.setState({selectedFile: file})
+        this.loadFile(file)
+    }
+
+    findModifiedFile(filename) {
+        const matching =  this.modifiedFiles.filter(modfied => {
+            return modfied.filename === filename
+          });
+          if (matching.length > 0){
+            return matching[0]
+          }
+          return null;
+    }
+
+    onFileChange(content) {
+        this.setState({ draft: true, code: content });
+    }
+
+    saveCode(){
+        const existingModifiedFile = this.findModifiedFile(this.state.selectedFile);
+        if (existingModifiedFile) {
+            existingModifiedFile.content = this.state.code;
+        } else {
+            this.modifiedFiles.push({filename: this.state.selectedFile, content: this.state.code});
+        }
+        this.worker.postMessage({ type: "file", filename: this.state.selectedFile, content: this.state.code })
     }
 
     render() {
+        let saveButton;
         const Snippets = () => {
             let count = -1;
             return this.state.snippets.map(snippet => {
@@ -107,7 +162,17 @@ class FeatureHolder extends Component {
         const fileOptionItems = this.fileOptions.map(opt => (
             <option key={opt}>{opt}</option>
         ));
-
+        if (this.state.draft) {
+            saveButton = (
+              <span><button
+                className="btn btn-primary btn-sm"
+                onClick={this.saveCode.bind(this)}
+                style={{ backgroundColor: "lightcoral" }}
+              >
+                Save feature
+              </button>&nbsp;</span>
+              );
+          }
         return (
             <div>
                 <div id="codeDiv" style={{ display: "none" }}>
@@ -133,7 +198,7 @@ class FeatureHolder extends Component {
                                 name="codeDiv"
                                 width="1200px"
                                 maxLines={Infinity}
-                                //onChange={this.onChange.bind(this)}
+                                onChange={this.onFileChange.bind(this)}
                                 value={this.state.code}
                                 editorProps={{ $blockScrolling: Infinity }}
                                 setOptions={{
@@ -142,9 +207,11 @@ class FeatureHolder extends Component {
                             />
                         </div>
                         <div>
+                            {saveButton}
                             <button
                                 className="btn btn-primary btn-sm"
-                                disabled={!this.state.ready}
+                                disabled={!this.state.ready || 
+                                    !this.state.selectedFile.endsWith(".feature")}
                                 onClick={this.runFeature.bind(this)}
                             >
                                 Run feature
