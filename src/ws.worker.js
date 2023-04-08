@@ -22,7 +22,7 @@ const runFeatures = (args) => {
 }
 
 const getFeatureJson = (feature) => {
-    runFeatures(`["-i", "features/${feature}", "--f=json", "--dry-run", "--no-summary",
+    runFeatures(`["-i", "${feature}", "--f=json", "--dry-run", "--no-summary",
     "--no-snippets", "-o", "reports/feature.json"]`)
     self.pyodide.runPython(`import json
 def get_json_step_report():
@@ -99,7 +99,7 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "snippets"){
         await behaveReadyPromise;
-        const step_impls = getFeatureJson("documentation.feature")
+        const step_impls = getFeatureJson(e.data.filename)
         postMessage({ type: "snippet", msg: step_impls });
     }
 };

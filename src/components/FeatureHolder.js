@@ -11,18 +11,17 @@ import "react-tabs/style/react-tabs.css";
 import workerUrl from "worker-plugin/loader!../ws.worker.js";
 import PrettyBox from "./PrettyBox";
 import SimpleTerminal from "./SimpleTerminal";
+import config from "../config/config.json"
 
 class FeatureHolder extends Component {
     constructor() {
         // Pass props to parent class
         super();
         // Set initial state
-        this.fileOptions = ["features/documentation.feature",
-                            "features/steps/documentation.py"]
         this.modifiedFiles = []
         this.state = {
             initializing: false,
-            selectedFile: this.fileOptions[0],
+            selectedFile: config.fileOptions[0],
             ready: false,
             selectedTab: 0,
             snippets: [],
@@ -55,14 +54,14 @@ class FeatureHolder extends Component {
 
     createFiles(worker) {
         let fileCount = 0
-        this.fileOptions.forEach(file => {
+        config.fileOptions.forEach(file => {
             fetch(`${window.location.origin}/trybehave/${file}`)
             .then(resp => {
                 resp.text().then(text => {
                     console.log(`Retrieved ${file}`);
                     worker.postMessage({ type: "file", filename: file, content: text })
                     fileCount++;
-                    if(fileCount === this.fileOptions.length){
+                    if(fileCount === config.fileOptions.length){
                         this.worker.postMessage({ type: "snippets" })
                     }
                 })
@@ -94,7 +93,9 @@ class FeatureHolder extends Component {
             }
             if (e.data.type === "ready"){
                 this.setState({ draft: false });
-                this.worker.postMessage({ type: "snippets" })
+                if(this.state.selectedFile.endsWith(".feature")){
+                    this.worker.postMessage({ type: "snippets", filename: this.state.selectedFile});
+                }
             }
         }
         this.loadFile();
@@ -160,7 +161,7 @@ class FeatureHolder extends Component {
             })
         }
 
-        const fileOptionItems = this.fileOptions.map(opt => (
+        const fileOptionItems = config.fileOptions.map(opt => (
             <option key={opt}>{opt}</option>
         ));
         if (this.state.draft) {

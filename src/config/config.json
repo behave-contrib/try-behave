@@ -1,0 +1,4 @@
+{
+    "fileOptions": ["features/documentation.feature",
+                    "features/steps/documentation.py"]
+}
