@@ -19,8 +19,8 @@ class FeatureHolder extends Component {
         super();
         // Set initial state
         this.modifiedFiles = []
+        this.initializing = false;
         this.state = {
-            initializing: false,
             selectedFile: config.fileOptions[0],
             ready: false,
             selectedTab: 0,
@@ -102,8 +102,8 @@ class FeatureHolder extends Component {
     }
 
     componentDidMount() {
-        if(!this.state.initializing) {
-            this.setState({initializing: true})
+        if(!this.initializing) {
+            this.initializing = true;
             this.init();
         }
     }
@@ -122,6 +122,10 @@ class FeatureHolder extends Component {
         const file = event.target.value;
         this.setState({selectedFile: file})
         this.loadFile(file)
+        console.log(`File selection change: ${file}`)
+        if(file.endsWith(".feature")){
+            this.worker.postMessage({ type: "snippets", filename: file});
+        }
     }
 
     findModifiedFile(filename) {

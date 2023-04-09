@@ -34,8 +34,10 @@ def get_json_step_report():
 def get_step_locations():
     report = get_json_step_report()
     locations = []
-    for step in report[0]["elements"][0]["steps"]:
-        locations.append(step["match"]["location"])
+    if len(report) > 0:
+        for step in report[0]["elements"][0]["steps"]:
+            if "match" in step:
+                locations.append(step["match"]["location"])
     return locations
 
 def is_empty_line(line):
@@ -70,7 +72,8 @@ snippet_json = json.dumps(snippets)
 }
 
 self.onmessage = async (e) => {
-    if(e.data.type === "init") {
+    if(e.data.type === "init" & !self.initializing) {
+        self.initializing = true;
         await pyodideReadyPromise;
         await self.pyodide.loadPackage("micropip");
         const micropip = self.pyodide.pyimport("micropip");

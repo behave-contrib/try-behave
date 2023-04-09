@@ -23,7 +23,7 @@ const LogLine = ({id, logText}) => {
 
 const LogList = ({logLines}) => {
     const logEntries = logLines.map(logLine => {
-        return <LogLine id={logLine.id} logText={logLine.text} />;
+        return <LogLine id={logLine.id} key={logLine.id} logText={logLine.text} />;
     });
 
     return logEntries;
