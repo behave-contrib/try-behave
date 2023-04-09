@@ -11,8 +11,8 @@ Feature: Website login
     Scenario: Login denied with wrong password
         Given I connect to server
         When I verify I get "Invalid Password" error when I run step:
-           '''
-            * I login with user "phantom" and password "123"
-           '''
+        """
+         * I login with user "phantom" and password "123"
+        """
         Then I verify unauthorised access
         And I close server connection

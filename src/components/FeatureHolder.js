@@ -114,8 +114,11 @@ class FeatureHolder extends Component {
         this.worker.postMessage({ type: "run", filename: this.state.selectedFile });
     }
 
-    setTabIndex(tabIndex) {
-        this.setState({ selectedTab: tabIndex })
+    setTabIndex(index, lastIndex, event) {
+        if (event.type === "keydown") {
+            return false;
+        }
+        this.setState({ selectedTab: index })
     }
 
     fileSelectionChanged(event) {

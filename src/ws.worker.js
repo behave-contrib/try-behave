@@ -18,13 +18,15 @@ const runFeatures = (args) => {
     from behave.__main__ import main as behave_main
     behave_main(${args})
     `);
-    return self.pyodide.runPython("sys.stdout.getvalue()")
+    return self.pyodide.runPython("sys.stdout.getvalue()");
 }
 
 const getFeatureJson = (feature) => {
     runFeatures(`["-i", "${feature}", "--f=json", "--dry-run", "--no-summary",
-    "--no-snippets", "-o", "reports/feature.json"]`)
+    "--no-snippets", "-o", "reports/feature.json"]`);
     self.pyodide.runPython(`import json
+import ast
+
 def get_json_step_report():
     json_file = open("reports/feature.json")
     with open("reports/feature.json", "r") as file:
@@ -41,8 +43,29 @@ def get_step_locations():
                     locations.append(step["match"]["location"])
     return locations
 
-def is_empty_line(line):
-    return len(line.strip()) == 0
+def get_function_source(filename, step_decorator):
+    with open(filename, encoding="utf-8") as file:
+        file_contents = file.read()
+    node = None
+    try:
+        node = ast.parse(file_contents, "file", "exec")
+    except:
+        pass
+    if node:
+        for body in node.body:
+            if type(body) == ast.FunctionDef:
+                step_text = None
+                try:
+                    step_text = body.decorator_list[0].args[0].value
+                except Exception:
+                    pass
+                if step_text and step_text in step_decorator:
+                    source_snippet = ""
+                    for decorator in body.decorator_list:
+                        source_snippet += ast.get_source_segment(file_contents, decorator)
+                        source_snippet += "\\n"
+                    source_snippet += ast.get_source_segment(file_contents, body)
+                    return source_snippet
 
 def get_snippets():
     locations = get_step_locations()
@@ -51,24 +74,19 @@ def get_snippets():
         parts = location.split(":")
         filename = parts[0]
         line_no = parts[1]
-        file_lines = []
         with open(filename, "r") as source_file:
             file_lines = source_file.readlines()
-        func_to_end = file_lines[int(line_no) -1:]
-        func_lines = []
-        for i in range(len(func_to_end)):
-            if is_empty_line(func_to_end[i]):
-                if i + 1 < len(func_to_end):
-                    if is_empty_line(func_to_end[i + 1]):
-                        break
-            func_lines.append(func_to_end[i])
-        snippets.append({"location": location, "file_lines": "".join(func_lines)})
+        step_decorator = file_lines[int(line_no) -1:int(line_no)][0]
+        function_source = get_function_source(filename, step_decorator)
+        existing_records = [rec for rec in snippets if rec["location"]==location and rec["file_lines"]==function_source]
+        if len(existing_records) == 0:
+            snippets.append({"location": location, "file_lines": function_source})
     return snippets
 
 snippets = get_snippets()
 global snippet_json
 snippet_json = json.dumps(snippets)
-`)
+`);
     return self.pyodide.globals.get("snippet_json");
 }
 
@@ -80,30 +98,30 @@ self.onmessage = async (e) => {
         const micropip = self.pyodide.pyimport("micropip");
         await micropip.install(`${e.data.baseurl}/trybehave/parse-1.19.0-py3-none-any.whl`);
         await micropip.install("behave");
-        behaveReadyPromise = new Promise((resolve) => {
         // make sure loading is done
-        self.pyodide.FS.mkdir("reports");
-        self.pyodide.FS.mkdir("features");
-        self.pyodide.FS.mkdir("features/steps");
-        resolve();
-        postMessage({ type: "log", msg: "initialization done!" });
-        postMessage({ type: "init" });
-        })
+        behaveReadyPromise = new Promise((resolve) => {
+            self.pyodide.FS.mkdir("reports");
+            self.pyodide.FS.mkdir("features");
+            self.pyodide.FS.mkdir("features/steps");
+            postMessage({ type: "log", msg: "initialization done!" });
+            postMessage({ type: "init" });
+            resolve();
+        });
     }
-    if (e.data.type === "file"){
+    if (e.data.type === "file") {
         self.pyodide.runPython(`with open("${e.data.filename}", "w") as fh:
-            fh.write("""${e.data.content}""")`)
+            fh.write('''${e.data.content}''')`);
         postMessage({ type: "ready" });
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;
-        const stdout = runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`)
+        const stdout = runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`);
         postMessage({ type: "terminal", msg: stdout });
 
     }
-    if (e.data.type === "snippets"){
+    if (e.data.type === "snippets") {
         await behaveReadyPromise;
-        const step_impls = getFeatureJson(e.data.filename)
+        const step_impls = getFeatureJson(e.data.filename);
         postMessage({ type: "snippet", msg: step_impls });
     }
 };
