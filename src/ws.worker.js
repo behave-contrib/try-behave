@@ -35,9 +35,10 @@ def get_step_locations():
     report = get_json_step_report()
     locations = []
     if len(report) > 0:
-        for step in report[0]["elements"][0]["steps"]:
-            if "match" in step:
-                locations.append(step["match"]["location"])
+        for element in report[0]["elements"]: 
+            for step in element["steps"]:
+                if "match" in step:
+                    locations.append(step["match"]["location"])
     return locations
 
 def is_empty_line(line):

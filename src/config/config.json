@@ -1,4 +1,8 @@
 {
     "fileOptions": ["features/documentation.feature",
-                    "features/steps/documentation.py"]
+                    "features/steps/documentation.py",
+                    "features/website.feature",
+                    "features/steps/website_steps.py",
+                    "features/steps/test_support.py"
+                ]
 }
