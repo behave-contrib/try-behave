@@ -26,7 +26,8 @@ class FeatureHolder extends Component {
             selectedTab: 0,
             snippets: [],
             code: "",
-            draft: false
+            draft: false,
+            showSpinner: true
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
@@ -90,6 +91,7 @@ class FeatureHolder extends Component {
                 const snippets = JSON.parse(e.data.msg);
                 this.setState({ snippets: snippets })
                 this.setState({ ready: true })
+                this.setState({ showSpinner: false })
             }
             if (e.data.type === "ready"){
                 this.setState({ draft: false });
@@ -235,6 +237,14 @@ class FeatureHolder extends Component {
                                     <Tab>Console log</Tab>
                                 </TabList>
                                 <TabPanel>
+                                {this.state.showSpinner && (
+                                    <div
+                                        style={{ marginBottom: 4 }}
+                                        className="spinner-border text-primary"
+                                        role="status"
+                                    >
+                                    </div>
+                                    )}
                                     <Snippets />
                                 </TabPanel>
                                 <TabPanel>
