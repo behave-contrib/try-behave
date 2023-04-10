@@ -195,8 +195,8 @@ class FeatureHolder extends Component {
                             <label style={{ fontWeight: 600 }}>Select file:</label>
                         </div>
                         <div className="col-4">
-                            <select id="filfilter"
-                                style={{ marginBottom: 5 }}
+                            <select id="fileselect"
+                                style={{ margin: 5 }}
                                 onChange={this.fileSelectionChanged.bind(this)}>
                                 {fileOptionItems}
                             </select>

@@ -1,6 +1,13 @@
 {
-    "fileOptions": ["features/documentation.feature",
-                    "features/steps/documentation.py",
+    "fileOptions": [
+                    "features/tutorial.feature",
+                    "features/steps/tutorial.py",
+                    "features/ninja.feature",
+                    "features/steps/ninja.py",
+                    "features/steps/ninja_fight.py",
+                    "features/calculator.feature",
+                    "features/steps/calculator_steps.py",
+                    "features/steps/calculator.py",
                     "features/website.feature",
                     "features/steps/website_steps.py",
                     "features/steps/test_support.py"

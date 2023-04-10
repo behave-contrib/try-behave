@@ -106,3 +106,4 @@ build/
 
 # Python stuff
 **__pycache__**
+env/

@@ -11,6 +11,18 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Python: Behave",
+            "type": "python",
+            "justMyCode": true,
+            "request": "launch",
+            "module": "behave",
+            "cwd" : "${workspaceFolder}/public/",
+            "args": [
+                "-i",
+                "${relativeFile}",
+            ]
         }
     ]
 }
