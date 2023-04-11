@@ -28,7 +28,6 @@ const getFeatureJson = (feature) => {
 import ast
 
 def get_json_step_report():
-    json_file = open("reports/feature.json")
     with open("reports/feature.json", "r") as file:
         data = file.read()
     return json.loads(data)
@@ -109,8 +108,11 @@ self.onmessage = async (e) => {
         });
     }
     if (e.data.type === "file") {
-        self.pyodide.runPython(`with open("${e.data.filename}", "w") as fh:
-            fh.write('''${e.data.content}''')`);
+        //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
+        self.pyodide.runPython(`import importlib
+with open("${e.data.filename}", "w") as fh:
+    fh.write('''${e.data.content}''')
+importlib.invalidate_caches()`);
         postMessage({ type: "ready" });
     }
     if (e.data.type === "run") {
