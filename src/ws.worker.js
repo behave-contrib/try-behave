@@ -4,7 +4,7 @@ import config from "./config/config.json"
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
 async function loadPyodideAndPackages() {
-    self.pyodide = await loadPyodide();
+    self.pyodide = await loadPyodide({homedir: "/working"});
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
@@ -30,7 +30,7 @@ const runFeatures = (args) => {
         del behave_main
     global locals_copy
     locals_copy = locals()
-    `);
+    `,{homedir: "/working"});
     const stdout = self.pyodide.runPython("sys.stdout.getvalue()");
     console.log(self.pyodide.globals.get("locals_copy"));
     interruptBuffer()
@@ -43,17 +43,21 @@ const runFeatures = (args) => {
 }
 
 const getFeatureJson = (feature) => {
-    runFeatures(`["-i", "${feature}", "--f=json", "--dry-run", "--no-summary",
-    "--no-snippets", "-o", "reports/feature.json"]`);
+    console.log("Feature path: " + feature)
+    runFeatures(`["-i", "/working/${feature}", "--f=json", "--dry-run", "--no-summary",
+    "--no-snippets"]`);
+    const stdout = self.pyodide.runPython("sys.stdout.getvalue()");
+    self.pyodide.FS.writeFile("/working/reports/feature.json", stdout);
     self.pyodide.runPython(`
     import json
     import ast
+    import time
 
     #if "behave_main" in locals():
     #    del behave_main
 
     def get_json_step_report():
-        with open("reports/feature.json", "r") as file:
+        with open("/working/reports/feature.json", "r") as file:
             data = file.read()
         return json.loads(data)
 
@@ -110,7 +114,7 @@ const getFeatureJson = (feature) => {
     snippets = get_snippets()
     global snippet_json
     snippet_json = json.dumps(snippets)
-`);
+`,{homedir: "/working"});
     const snippet_json = self.pyodide.globals.get("snippet_json");
     return snippet_json;
 }
@@ -123,11 +127,22 @@ self.onmessage = async (e) => {
         const micropip = self.pyodide.pyimport("micropip");
         await micropip.install(`${e.data.baseurl}/trybehave/parse-1.19.0-py3-none-any.whl`);
         await micropip.install("behave");
+        console.log("behave installed")
         // make sure loading is done
         behaveReadyPromise = new Promise((resolve) => {
-            self.pyodide.FS.mkdir("reports");
-            self.pyodide.FS.mkdir("features");
-            self.pyodide.FS.mkdir("features/steps");
+            const mountDir = "/working"
+            console.log("making mount dir")
+            try {
+                self.pyodide.FS.mkdir(mountDir);
+            } catch (error) {
+                
+            }
+            console.log("made mount dir")
+            //self.pyodide.FS.mount(self.pyodide.FS.filesystems.IDBFS, { root: "." }, mountDir)
+            console.log("mounted fs")
+            self.pyodide.FS.mkdir("/working/reports");
+            self.pyodide.FS.mkdir("/working/features");
+            self.pyodide.FS.mkdir("/working/features/steps");
             postMessage({ type: "log", msg: "initialization done!" });
             postMessage({ type: "init" });
             resolve();
@@ -141,40 +156,61 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "update_file") {
         self.pyodide.FS.writeFile(e.data.filename, e.data.content);
-        // if(e.data.filename.endsWith(".py")) {
-        //     const directory_parts = e.data.filename.split("/");
-        //     let mod_name = directory_parts.slice(-1)[0]
-        //     mod_name = mod_name.replace(".py", "");
-        //     console.log(`mod_name: ${mod_name}`)
-        //     const directory_paths = directory_parts.slice(0, -1);
-        //     let module_id = directory_paths.join(".")
-        //     module_id += "."
-        //     module_id += mod_name
-        //     // console.log(`Reloading module: ${module_id} as ${mod_name}`)
-            // interruptBuffer()
-            // try {
-            //     self.pyodide.checkInterrupt()
-            // } catch (error) {
-            //     console.log("Got interrupt in `update_file`")
-            // }
-            // //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
-            // self.pyodide.runPython(`
-            // if "behave_main" in locals():
-            //     del behave_main
-            // import importlib
-            // importlib.invalidate_caches()
-            // #import ${module_id} as ${mod_name}
-            // import ${module_id}
-            // importlib.reload(${mod_name})
-            // global succeded
-            // succeeded="yes"`);
-            // console.log(`Module reload succeeded: ${self.pyodide.globals.get("succeeded")}`);
-        //}
-        postMessage({ type: "ready" });
+        if(e.data.filename.endsWith(".py")) {
+            self.pyodide.FS.syncfs(true, function (err) {
+                //handle callback
+                console.log(`Reloaded: ${e.data.filename}`);
+                const directory_parts = e.data.filename.split("/");
+                let mod_name = directory_parts.slice(-1)[0]
+                mod_name = mod_name.replace(".py", "");
+                console.log(`mod_name: ${mod_name}`)
+                const directory_paths = directory_parts.slice(0, -1);
+                let module_id = directory_paths.join(".")
+                module_id += "."
+                module_id += mod_name
+                console.log(`Reloading module: ${module_id} as ${mod_name}`)
+                // interruptBuffer()
+                // try {
+                //     self.pyodide.checkInterrupt()
+                // } catch (error) {
+                //     console.log("Got interrupt in `update_file`")
+                // }
+                //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
+                self.pyodide.runPython(`
+                from pyodide.code import eval_code
+                eval_code("""
+                import importlib
+                importlib.invalidate_caches()
+                import ${module_id} as ${mod_name}
+                """, globals={"behave_main": None}, locals={"behave_main": None})
+                #if "context" in locals():
+                #    del context
+                #if "behave_main" in locals():
+                #    del behave_main
+                #import importlib
+                #import importlib.util
+                #spec = importlib.util.spec_from_file_location("${mod_name}", "${e.data.filename}")
+                #test = importlib.util.module_from_spec(spec)
+                #spec.loader.exec_module(test)
+                #importlib.invalidate_caches()
+                #import ${module_id} as ${mod_name}
+                # import ${module_id}
+                #importlib.reload(test)
+                #importlib.reload(${mod_name})
+                #importlib.reload(${module_id})
+                global succeded
+                succeeded="yes"`);
+                console.log(`Module reload succeeded: ${self.pyodide.globals.get("succeeded")}`);
+                postMessage({ type: "ready" });
+            });
+            console.log("line after sync");
+        } else {
+            postMessage({ type: "ready" });
+        }
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;
-        const stdout = runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`);
+        const stdout = runFeatures(`["--no-capture", "-i", "/working/${e.data.filename}"]`);
         postMessage({ type: "terminal", msg: stdout });
 
     }
