@@ -1,11 +1,10 @@
-
+import config from "./config/config.json"
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
 async function loadPyodideAndPackages() {
     self.pyodide = await loadPyodide();
-  //await self.pyodide.loadPackage(["numpy", "pytz"]);
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
@@ -18,89 +17,101 @@ const interruptBuffer = () => {
 }
 
 const runFeatures = (args) => {
-    interruptBuffer()
-    try {
-        self.pyodide.checkInterrupt()
-    } catch (error) {
-        console.log("Got interrupt in getFeatureJson()")
-    }
+    console.log("Called runFeatures()")
     self.pyodide.runPython(`
+    if "behave_main" in locals():
+        del behave_main
     import sys
     import io
     sys.stdout = io.StringIO()
     from behave.__main__ import main as behave_main
     behave_main(${args})
-`);
-    stdout = self.pyodide.runPython("sys.stdout.getvalue()");
+    if "behave_main" in locals():
+        del behave_main
+    global locals_copy
+    locals_copy = locals()
+    `);
+    const stdout = self.pyodide.runPython("sys.stdout.getvalue()");
+    console.log(self.pyodide.globals.get("locals_copy"));
+    interruptBuffer()
+    try {
+        self.pyodide.checkInterrupt()
+    } catch (error) {
+        console.log("Got interrupt in runFeatures()")
+    }
     return stdout;
 }
 
 const getFeatureJson = (feature) => {
     runFeatures(`["-i", "${feature}", "--f=json", "--dry-run", "--no-summary",
     "--no-snippets", "-o", "reports/feature.json"]`);
-    self.pyodide.runPython(`import json
-import ast
+    self.pyodide.runPython(`
+    import json
+    import ast
 
-def get_json_step_report():
-    with open("reports/feature.json", "r") as file:
-        data = file.read()
-    return json.loads(data)
+    #if "behave_main" in locals():
+    #    del behave_main
 
-def get_step_locations():
-    report = get_json_step_report()
-    locations = []
-    if len(report) > 0:
-        for element in report[0]["elements"]: 
-            for step in element["steps"]:
-                if "match" in step:
-                    locations.append(step["match"]["location"])
-    return locations
+    def get_json_step_report():
+        with open("reports/feature.json", "r") as file:
+            data = file.read()
+        return json.loads(data)
 
-def get_function_source(filename, step_decorator):
-    with open(filename, encoding="utf-8") as file:
-        file_contents = file.read()
-    node = None
-    try:
-        node = ast.parse(file_contents, "file", "exec")
-    except:
-        pass
-    if node:
-        for body in node.body:
-            if type(body) == ast.FunctionDef:
-                step_text = None
-                try:
-                    step_text = body.decorator_list[0].args[0].value
-                except Exception:
-                    pass
-                if step_text and step_text in step_decorator:
-                    source_snippet = ""
-                    for decorator in body.decorator_list:
-                        source_snippet += ast.get_source_segment(file_contents, decorator)
-                        source_snippet += "\\n"
-                    source_snippet += ast.get_source_segment(file_contents, body)
-                    return source_snippet
+    def get_step_locations():
+        report = get_json_step_report()
+        locations = []
+        if len(report) > 0:
+            for element in report[0]["elements"]: 
+                for step in element["steps"]:
+                    if "match" in step:
+                        locations.append(step["match"]["location"])
+        return locations
 
-def get_snippets():
-    locations = get_step_locations()
-    snippets = []
-    for location in locations:
-        parts = location.split(":")
-        filename = parts[0]
-        line_no = parts[1]
-        with open(filename, "r") as source_file:
-            file_lines = source_file.readlines()
-        step_decorator = file_lines[int(line_no) -1:int(line_no)][0]
-        function_source = get_function_source(filename, step_decorator)
-        existing_records = [rec for rec in snippets if rec["location"]==location and rec["file_lines"]==function_source]
-        if len(existing_records) == 0:
-            snippets.append({"location": location, "file_lines": function_source})
-    return snippets
+    def get_function_source(filename, step_decorator):
+        with open(filename, encoding="utf-8") as file:
+            file_contents = file.read()
+        node = None
+        try:
+            node = ast.parse(file_contents, "file", "exec")
+        except:
+            pass
+        if node:
+            for body in node.body:
+                if type(body) == ast.FunctionDef:
+                    step_text = None
+                    try:
+                        step_text = body.decorator_list[0].args[0].value
+                    except Exception:
+                        pass
+                    if step_text and step_text in step_decorator:
+                        source_snippet = ""
+                        for decorator in body.decorator_list:
+                            source_snippet += ast.get_source_segment(file_contents, decorator)
+                            source_snippet += "\\n"
+                        source_snippet += ast.get_source_segment(file_contents, body)
+                        return source_snippet
 
-snippets = get_snippets()
-global snippet_json
-snippet_json = json.dumps(snippets)
+    def get_snippets():
+        locations = get_step_locations()
+        snippets = []
+        for location in locations:
+            parts = location.split(":")
+            filename = parts[0]
+            line_no = parts[1]
+            with open(filename, "r") as source_file:
+                file_lines = source_file.readlines()
+            step_decorator = file_lines[int(line_no) -1:int(line_no)][0]
+            function_source = get_function_source(filename, step_decorator)
+            existing_records = [rec for rec in snippets if rec["location"]==location and rec["file_lines"]==function_source]
+            if len(existing_records) == 0:
+                snippets.append({"location": location, "file_lines": function_source})
+        return snippets
+
+    snippets = get_snippets()
+    global snippet_json
+    snippet_json = json.dumps(snippets)
 `);
-    snippet_json = self.pyodide.globals.get("snippet_json");
+    const snippet_json = self.pyodide.globals.get("snippet_json");
     return snippet_json;
 }
 
@@ -124,30 +135,41 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "file") {
         self.pyodide.FS.writeFile(e.data.filename, e.data.content);
-        self.pyodide.runPython(`with open("${e.data.filename}", "w") as fh:\n\tfh.write('''${e.data.content}''')`);
-        postMessage({ type: "ready" });
+        if(e.data.filename === config.fileOptions.slice(-1)[0]){
+            postMessage({ type: "ready" });
+        }
     }
     if (e.data.type === "update_file") {
         self.pyodide.FS.writeFile(e.data.filename, e.data.content);
-        if(e.data.filename.endsWith(".py")) {
-            const directory_parts = e.data.filename.split("/");
-            let mod_name = directory_parts.slice(-1)[0]
-            mod_name = mod_name.replace(".py", "");
-            console.log(`mod_name: ${mod_name}`)
-            const directory_paths = directory_parts.slice(0, -1);
-            let module_id = directory_paths.join(".")
-            module_id += "."
-            module_id += mod_name
-            console.log(`Reloading module: ${module_id} as ${mod_name}`)
-            //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
-            self.pyodide.runPython(`import importlib
-importlib.invalidate_caches()
-import ${module_id} as ${mod_name}
-importlib.reload(${mod_name})
-global succeded
-succeded="yes"`);
-            console.log(`Module reload succeeded: ${self.pyodide.globals.get("succeded")}`);
-        }
+        // if(e.data.filename.endsWith(".py")) {
+        //     const directory_parts = e.data.filename.split("/");
+        //     let mod_name = directory_parts.slice(-1)[0]
+        //     mod_name = mod_name.replace(".py", "");
+        //     console.log(`mod_name: ${mod_name}`)
+        //     const directory_paths = directory_parts.slice(0, -1);
+        //     let module_id = directory_paths.join(".")
+        //     module_id += "."
+        //     module_id += mod_name
+        //     // console.log(`Reloading module: ${module_id} as ${mod_name}`)
+            // interruptBuffer()
+            // try {
+            //     self.pyodide.checkInterrupt()
+            // } catch (error) {
+            //     console.log("Got interrupt in `update_file`")
+            // }
+            // //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
+            // self.pyodide.runPython(`
+            // if "behave_main" in locals():
+            //     del behave_main
+            // import importlib
+            // importlib.invalidate_caches()
+            // #import ${module_id} as ${mod_name}
+            // import ${module_id}
+            // importlib.reload(${mod_name})
+            // global succeded
+            // succeeded="yes"`);
+            // console.log(`Module reload succeeded: ${self.pyodide.globals.get("succeeded")}`);
+        //}
         postMessage({ type: "ready" });
     }
     if (e.data.type === "run") {

@@ -54,17 +54,12 @@ class FeatureHolder extends Component {
     }
 
     createFiles(worker) {
-        let fileCount = 0
         config.fileOptions.forEach(file => {
             fetch(`${window.location.origin}/trybehave/${file}`)
             .then(resp => {
                 resp.text().then(text => {
                     console.log(`Retrieved ${file}`);
-                    worker.postMessage({ type: "file", filename: file, content: text })
-                    fileCount++;
-                    if(fileCount === config.fileOptions.length){
-                        this.worker.postMessage({ type: "snippets" })
-                    }
+                    worker.postMessage({ type: "file", filename: file, content: text });
                 })
             });
         });
@@ -96,6 +91,7 @@ class FeatureHolder extends Component {
             if (e.data.type === "ready"){
                 this.setState({ draft: false });
                 if(this.state.selectedFile.endsWith(".feature")){
+                    console.log("post worker msg from `ready`")
                     this.worker.postMessage({ type: "snippets", filename: this.state.selectedFile});
                 }
             }
