@@ -5,12 +5,25 @@ importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
 async function loadPyodideAndPackages() {
     self.pyodide = await loadPyodide();
-  await self.pyodide.loadPackage(["numpy", "pytz"]);
+  //await self.pyodide.loadPackage(["numpy", "pytz"]);
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
 
+// See: https://pyodide.org/en/stable/usage/api/js-api.html#pyodide.setInterruptBuffer
+const interruptBuffer = () => {
+    let interrupt_buffer = new Uint8Array(new SharedArrayBuffer(1));
+    interrupt_buffer[0] = 2;
+    self.pyodide.setInterruptBuffer(interrupt_buffer);
+}
+
 const runFeatures = (args) => {
+    interruptBuffer()
+    try {
+        self.pyodide.checkInterrupt()
+    } catch (error) {
+        console.log("Got interrupt in getFeatureJson()")
+    }
     self.pyodide.runPython(`
     import sys
     import io
@@ -18,7 +31,8 @@ const runFeatures = (args) => {
     from behave.__main__ import main as behave_main
     behave_main(${args})
     `);
-    return self.pyodide.runPython("sys.stdout.getvalue()");
+    stdout = self.pyodide.runPython("sys.stdout.getvalue()");
+    return stdout;
 }
 
 const getFeatureJson = (feature) => {
@@ -86,7 +100,8 @@ snippets = get_snippets()
 global snippet_json
 snippet_json = json.dumps(snippets)
 `);
-    return self.pyodide.globals.get("snippet_json");
+    snippet_json = self.pyodide.globals.get("snippet_json");
+    return snippet_json;
 }
 
 self.onmessage = async (e) => {
@@ -108,11 +123,31 @@ self.onmessage = async (e) => {
         });
     }
     if (e.data.type === "file") {
-        //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
-        self.pyodide.runPython(`import importlib
-with open("${e.data.filename}", "w") as fh:
-    fh.write('''${e.data.content}''')
-importlib.invalidate_caches()`);
+        self.pyodide.FS.writeFile(e.data.filename, e.data.content);
+        self.pyodide.runPython(`with open("${e.data.filename}", "w") as fh:\n\tfh.write('''${e.data.content}''')`);
+        postMessage({ type: "ready" });
+    }
+    if (e.data.type === "update_file") {
+        self.pyodide.FS.writeFile(e.data.filename, e.data.content);
+        if(e.data.filename.endsWith(".py")) {
+            const directory_parts = e.data.filename.split("/");
+            let mod_name = directory_parts.slice(-1)[0]
+            mod_name = mod_name.replace(".py", "");
+            console.log(`mod_name: ${mod_name}`)
+            const directory_paths = directory_parts.slice(0, -1);
+            let module_id = directory_paths.join(".")
+            module_id += "."
+            module_id += mod_name
+            console.log(`Reloading module: ${mod_name} as ${module_id}`)
+            //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
+            self.pyodide.runPython(`import importlib
+importlib.invalidate_caches()
+import ${module_id} as ${mod_name}
+importlib.reload(${mod_name})
+global succeded
+succeded="yes"`);
+            console.log(`Module reload succeeded: ${self.pyodide.globals.get("succeded")}`);
+        }
         postMessage({ type: "ready" });
     }
     if (e.data.type === "run") {

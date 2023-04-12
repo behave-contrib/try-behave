@@ -154,7 +154,7 @@ class FeatureHolder extends Component {
         } else {
             this.modifiedFiles.push({filename: this.state.selectedFile, content: this.state.code});
         }
-        this.worker.postMessage({ type: "file", filename: this.state.selectedFile, content: this.state.code })
+        this.worker.postMessage({ type: "update_file", filename: this.state.selectedFile, content: this.state.code })
     }
 
     render() {
