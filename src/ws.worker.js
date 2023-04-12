@@ -30,7 +30,7 @@ const runFeatures = (args) => {
     sys.stdout = io.StringIO()
     from behave.__main__ import main as behave_main
     behave_main(${args})
-    `);
+`);
     stdout = self.pyodide.runPython("sys.stdout.getvalue()");
     return stdout;
 }
@@ -138,7 +138,7 @@ self.onmessage = async (e) => {
             let module_id = directory_paths.join(".")
             module_id += "."
             module_id += mod_name
-            console.log(`Reloading module: ${mod_name} as ${module_id}`)
+            console.log(`Reloading module: ${module_id} as ${mod_name}`)
             //Se: https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-import-a-file-i-just-wrote-to-the-file-system
             self.pyodide.runPython(`import importlib
 importlib.invalidate_caches()
