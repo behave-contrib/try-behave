@@ -3,13 +3,12 @@
                     "features/tutorial.feature",
                     "features/steps/tutorial.py",
                     "features/ninja.feature",
-                    "features/steps/ninja_fight.py",
                     "features/steps/ninja.py",
                     "features/calculator.feature",
-                    "features/steps/calculator.py",
                     "features/steps/calculator_steps.py",
                     "features/website.feature",
                     "features/steps/website_steps.py",
-                    "features/steps/test_support.py"
+                    "features/steps/test_support.py",
+                    "features/environment.py"
                 ]
 }

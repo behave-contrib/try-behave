@@ -5,7 +5,32 @@
 # pylint: disable=E0401,E0602,E0611,C0114,C0116,E0102,W0613,W0614,W0401
 
 from behave import *
-from ninja_fight import NinjaFight
+
+
+# ----------------------------------------------------------------------------
+# PROBLEM DOMAIN:
+# ----------------------------------------------------------------------------
+class NinjaFight(object):
+    """
+    Domain model for ninja fights.
+    """
+
+    def __init__(self, with_ninja_level=None):
+        self.with_ninja_level = with_ninja_level
+        self.opponent = None
+
+    def decision(self):
+        """
+        Business logic how a Ninja should react to increase his survival rate.
+        """
+        assert self.with_ninja_level is not None
+        assert self.opponent is not None
+        if self.opponent == "Chuck Norris":
+            return "run for his life"
+        if "black-belt" in self.with_ninja_level:
+            return "engage the opponent"
+        else:
+            return "run for his life"
 
 
 @given('the ninja encounters another opponent')
