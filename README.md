@@ -12,7 +12,7 @@ Try out `Try Behave!` live [here](https://fallwest.github.io/trybehave/).
 
 ## Local installation
 
-You need [Node.js](https://nodejs.org) to build `Try Behave!`. To build and run `Try Behave!` locally, clone this repo, `cd` into the repository folder and run `npm install`. To start at the application at [http://localhost:3000/trybehave]([http://localhost:3000/trybehave]), run `npm start`.
+You need [Node.js](https://nodejs.org) to build `Try Behave!`. To build and run `Try Behave!` locally, clone this repo, `cd` into the repository folder and run `npm install`. To start at the application at http://localhost:3000/trybehave, run `npm start`.
 
 ## Credits
 
