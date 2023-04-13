@@ -187,8 +187,21 @@ class FeatureHolder extends Component {
                 </div>
                 <div className="container-fluid" style={{ margin: 5 }}>
                     <div className="row">
+                    <div className="col-4">
+                            <div className="alert alert-primary" role="alert">
+                            <h4 className="alert-heading">How does it work?</h4>
+                            <hr/>
+                                <ul>
+                                <li>You can select files via the dropdown list and edit them directly in the editor.</li>
+                                <li>Click on `Save file` to save changes.</li>
+                                <li>Choose a feature and click on `Run feature` to execute it.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div> 
+                    <div className="row">
                         <div className="col-1">
-                            <label style={{ fontWeight: 600 }}>Select file:</label>
+                            <label style={{ fontWeight: 500 }}>Select file:</label>
                         </div>
                         <div className="col-4">
                             <select id="fileselect"

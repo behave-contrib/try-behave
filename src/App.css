@@ -42,3 +42,8 @@ pre code.hljs {
 .ace_editor.ace_autocomplete {
     width: 1000px;
 }
+
+.btn.btn-primary:disabled{
+    background-color: #D3D3D3;
+    color: black;
+}
