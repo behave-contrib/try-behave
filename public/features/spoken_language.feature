@@ -4,7 +4,7 @@
 # BSD-2-Clause
 
 # language: de
-Funktionalität: Using Languages other than English (tutorial12)
+Funktionalität: Using Languages other than English
 
   Als Deutscher
   will ich BDD-Tests auch in Deutsch schreiben und ausführen.
