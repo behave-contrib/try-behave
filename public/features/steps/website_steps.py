@@ -4,8 +4,7 @@ from behave import given, step
 
 @given('I connect to server')
 def step_impl(context):
-    server: TestObject = TestObject(ip="fe80::aede:48ff:fe00:1122")
-    context.server = server
+    context.server = TestObject()
 
 
 @step('I create a user named "{name}" with username "{username}" and password "{password}"')
@@ -53,15 +52,16 @@ import random
 from typing import Dict, List
 
 
+def get_session_id():
+    return str(ipaddress.IPv6Address(random.randint(0, 2**128-1)))
+
 class PermissionError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
 class TestObject:
 
-    def __init__(self, ip) -> None:
-        self.ip = ip
-        self.version = "v1.0"
+    def __init__(self) -> None:
         self._users = [
             {
                 "session": "b5e3:c196:1e0e:e1ba:8f1c:90b5:67d3:972",
@@ -77,24 +77,23 @@ class TestObject:
         user = next(user for user in self._users if user["user_login"] == login)
         if not user["user_password"] == password:
             raise Exception("Invalid Password")
-        user["session"] = self._get_session_id()
+        user["session"] = get_session_id()
         return user["session"]
 
     def logout(self, token) -> None:
         user = self.get_user(token)
         user["session"] = None
 
-    def get_version(self, token) -> str:
-        self.get_user(token)
-        return self.version
-
-    def get_user_id(self, token, login) -> str:
+    def get_user_id(self, token) -> str:
         user = self.get_user(token)
         return user["user_login"]
 
-    def get_user_name(self, token, user_id) -> str:
+    def get_user_name(self, token) -> str:
         user = self.get_user(token)
         return user["user_name"]
+
+    def _find_user(self, login):
+        return next(user for user in self._users if user["user_login"] == login)
 
     def get_user(self, token) -> Dict[str, str]:
         try:
@@ -102,18 +101,19 @@ class TestObject:
         except StopIteration:
             raise PermissionError("Not logged in")
 
-    def _verify_admin(self, user):
+    def _verify_admin(self, token):
+        user = self.get_user(token)
         if "admin" not in user["user_rights"]:
             raise PermissionError("Not authorised")
 
     def get_all_users(self, token) -> List[Dict[str, str]]:
-        user = self.get_user(token)
-        self._verify_admin(user)
+        self._verify_admin(token)
         return self._users
 
-    def delete_user(self, token):
-        user = self.get_user(token)
-        self._users.pop(user)
+    def delete_user(self, token, login):
+        self._verify_admin(token)
+        user_to_delete = self._find_user(login)
+        self._users.pop(user_to_delete)
 
     def put_user_password(self, token, new_password):
         user = self.get_user(token)
@@ -123,14 +123,18 @@ class TestObject:
         user = self.get_user(token)
         user["user_name"] = name
 
-    def put_user_right(self, token, right):
-        user = self.get_user(token)
-        user["user_rights"].append(right)
+    def put_user_right(self, token, login, right):
+        self._verify_admin(token)
+        user_to_modify = self._find_user(login)
+        user_to_modify["user_rights"].append(right)
+
+    def delete_user_right(self, token, login, right):
+        self._verify_admin(token)
+        user_to_modify = self._find_user(login)
+        user_to_modify["user_rights"].pop(right)
 
     def post_new_user(self, token, name, login, password) -> str:
-        user = self.get_user(token)
-        self._verify_admin(user)
-        self._users.append({"user_name": name, "user_login": login, "user_password": password, "session": self._get_session_id(), "user_rights": []})
-
-    def _get_session_id(self):
-        return str(ipaddress.IPv6Address(random.randint(0, 2**128-1)))
+        self._verify_admin(token)
+        self._users.append({"user_name": name, "user_login": login, 
+                            "user_password": password, "session": get_session_id(),
+                            "user_rights": []})
