@@ -7,22 +7,6 @@
 from behave import given, register_type, then, when
 
 
-# -----------------------------------------------------------------------------
-# DOMAIN-MODEL:
-# -----------------------------------------------------------------------------
-class Calculator(object):
-
-    def __init__(self, value=0):
-        self.result = value
-
-    def reset(self):
-        self.result = 0
-
-    def add2(self, x, y):
-        self.result += (x + y)
-        return self.result
-
-
 def parse_number(text):
     """
     Convert parsed text into a number.
@@ -49,3 +33,20 @@ def step_impl(context, x, y):
 def step_impl(context, expected):
     assert isinstance(expected, int)
     assert context.calculator.result == expected
+
+
+# file:features/steps/calculator.py
+# -----------------------------------------------------------------------------
+# DOMAIN-MODEL:
+# -----------------------------------------------------------------------------
+class Calculator(object):
+
+    def __init__(self, value=0):
+        self.result = value
+
+    def reset(self):
+        self.result = 0
+
+    def add2(self, x, y):
+        self.result += (x + y)
+        return self.result

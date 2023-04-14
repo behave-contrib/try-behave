@@ -8,6 +8,7 @@ async function loadPyodideAndPackages() {
 }
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
+let loadedFiles = []
 
 const runFeatures = (args) => {
     console.log("Called runFeatures()")
@@ -116,7 +117,8 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "file") {
         self.pyodide.FS.writeFile(e.data.filename, e.data.content);
-        if(e.data.filename === config.fileOptions.slice(-1)[0]){
+        loadedFiles.push(e.data.filename)
+        if(loadedFiles.length === config.fileOptions.length){
             postMessage({ type: "ready" });
         }
     }

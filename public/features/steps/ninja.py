@@ -7,32 +7,6 @@
 from behave import *
 
 
-# ----------------------------------------------------------------------------
-# PROBLEM DOMAIN:
-# ----------------------------------------------------------------------------
-class NinjaFight(object):
-    """
-    Domain model for ninja fights.
-    """
-
-    def __init__(self, with_ninja_level=None):
-        self.with_ninja_level = with_ninja_level
-        self.opponent = None
-
-    def decision(self):
-        """
-        Business logic how a Ninja should react to increase his survival rate.
-        """
-        assert self.with_ninja_level is not None
-        assert self.opponent is not None
-        if self.opponent == "Chuck Norris":
-            return "run for his life"
-        if "black-belt" in self.with_ninja_level:
-            return "engage the opponent"
-        else:
-            return "run for his life"
-
-
 @given('the ninja encounters another opponent')
 def step_the_ninja_encounters_another_opponent(context):
     """
@@ -61,3 +35,30 @@ def step_the_ninja_should(context, reaction):
     actual_reaction = context.ninja_fight.decision()
     print(f"Reaction: {actual_reaction}")
     assert reaction == actual_reaction
+
+
+# file:features/steps/ninja_fight.py
+# ----------------------------------------------------------------------------
+# PROBLEM DOMAIN:
+# ----------------------------------------------------------------------------
+class NinjaFight(object):
+    """
+    Domain model for ninja fights.
+    """
+
+    def __init__(self, with_ninja_level=None):
+        self.with_ninja_level = with_ninja_level
+        self.opponent = None
+
+    def decision(self):
+        """
+        Business logic how a Ninja should react to increase his survival rate.
+        """
+        assert self.with_ninja_level is not None
+        assert self.opponent is not None
+        if self.opponent == "Chuck Norris":
+            return "run for his life"
+        if "black-belt" in self.with_ninja_level:
+            return "engage the opponent"
+        else:
+            return "run for his life"
