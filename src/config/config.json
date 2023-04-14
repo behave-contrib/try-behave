@@ -9,6 +9,7 @@
                     "features/website.feature",
                     "features/steps/website_steps.py",
                     "features/steps/test_support.py",
-                    "features/environment.py"
+                    "features/environment.py",
+                    "features/spoken_language.feature"
                 ]
 }

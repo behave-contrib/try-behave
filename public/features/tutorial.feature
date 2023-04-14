@@ -1,4 +1,3 @@
-
 # Copyright (c) 2012-2014 Benno Rice, Richard Jones, Jens Engel and others, except where noted.
 # All rights reserved.
 # https://github.com/behave/behave
