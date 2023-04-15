@@ -1,4 +1,4 @@
-# pylint: disable=E0401,E0611,C0114,C0116,E0102,W0613
+# pylint: disable=E0401,E0611,C0114,C0115,C0116,C0411,C0413,E0102,W0613,W0622
 from behave import given, step
 
 
@@ -13,14 +13,12 @@ def step_impl(context, username, password, name=""):
     server: TestObject = context.server
     session_id = server.authenticate("admin", "999123")
     server.post_new_user(token=session_id, name=name, login=username, password=password)
-    context.server = server
 
 
 @step('I login with user "{username}" and password "{password}"')
 def step_impl(context, username, password):
     server: TestObject = context.server
-    session_id = server.authenticate(username, password)
-    context.session_id = session_id
+    context.session_id = server.authenticate(username, password)
 
 
 @step('I verify valid login for "{name}"')
@@ -76,7 +74,7 @@ class TestObject:
         # Simulate user db lookup
         user = next(user for user in self._users if user["user_login"] == login)
         if not user["user_password"] == password:
-            raise Exception("Invalid Password")
+            raise PermissionError("Invalid Password")
         user["session"] = get_session_id()
         return user["session"]
 
@@ -98,8 +96,8 @@ class TestObject:
     def get_user(self, token) -> Dict[str, str]:
         try:
             return next(user for user in self._users if user["session"] == token)
-        except StopIteration:
-            raise PermissionError("Not logged in")
+        except StopIteration as ex:
+            raise PermissionError("Not logged in") from ex
 
     def _verify_admin(self, token):
         user = self.get_user(token)
@@ -135,6 +133,6 @@ class TestObject:
 
     def post_new_user(self, token, name, login, password) -> str:
         self._verify_admin(token)
-        self._users.append({"user_name": name, "user_login": login, 
+        self._users.append({"user_name": name, "user_login": login,
                             "user_password": password, "session": get_session_id(),
                             "user_rights": []})
