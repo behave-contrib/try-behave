@@ -52,3 +52,7 @@ pre code.hljs {
   float: left;
   /* border: 1px solid red; */
 }
+
+.col-9{
+    width: 99%;
+}

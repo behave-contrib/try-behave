@@ -219,7 +219,7 @@ class FeatureHolder extends Component {
                                 mode="gherkin"
                                 theme="github"
                                 name="codeDiv"
-                                width="100%"
+                                width="auto"
                                 maxLines={Infinity}
                                 onChange={this.onFileChange.bind(this)}
                                 value={this.state.code}
