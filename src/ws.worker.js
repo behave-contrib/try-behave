@@ -102,7 +102,7 @@ self.onmessage = async (e) => {
         await pyodideReadyPromise;
         await self.pyodide.loadPackage("micropip");
         const micropip = self.pyodide.pyimport("micropip");
-        await micropip.install(`${e.data.baseurl}/trybehave/parse-1.19.0-py3-none-any.whl`);
+        await micropip.install(`${e.data.baseurl}/try-behave/parse-1.19.0-py3-none-any.whl`);
         await micropip.install("behave");
         console.log("behave installed")
         // make sure loading is done
