@@ -44,7 +44,7 @@ class FeatureHolder extends Component {
             console.log(`Loaded file with existing changes ${file}`);
             this.setState({code: modifiedFile.content});
         } else {
-            fetch(`${window.location.origin}/trybehave/${file}`)
+            fetch(`${window.location.origin}/try-behave/${file}`)
             .then(resp => {
                 resp.text().then(text => {
                     console.log(`Loaded ${file}`);
@@ -56,7 +56,7 @@ class FeatureHolder extends Component {
 
     createFiles(worker) {
         config.fileOptions.forEach(file => {
-            fetch(`${window.location.origin}/trybehave/${file}`)
+            fetch(`${window.location.origin}/try-behave/${file}`)
             .then(resp => {
                 resp.text().then(text => {
                     console.log(`Retrieved ${file}`);

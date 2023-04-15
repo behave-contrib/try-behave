@@ -1,7 +1,7 @@
 {
   "name": "try-behave",
   "version": "0.1.0",
-  "homepage": "https://fallwest.github.io/trybehave",
+  "homepage": "https://behave-contrib.github.io/try-behave",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
