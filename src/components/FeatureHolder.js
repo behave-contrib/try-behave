@@ -2,6 +2,7 @@
 /* eslint-disable import/no-webpack-loader-syntax */
 import React, { Component } from "react";
 import AceEditor from "react-ace";
+import Alert from "react-bootstrap/Alert";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
 import "ace-builds/src-noconflict/mode-gherkin";
@@ -187,36 +188,38 @@ class FeatureHolder extends Component {
                 </div>
                 <div className="container-fluid" style={{ margin: 5 }}>
                     <div className="row">
-                    <div className="col-4">
-                            <div className="alert alert-primary" role="alert">
-                            <h4 className="alert-heading">How does it work?</h4>
-                            <hr/>
+                        <div className="col-9">
+                            <Alert variant="primary" dismissible>
+                                <Alert.Heading>How does it work?</Alert.Heading>
+                                <hr />
                                 <ul>
-                                <li>You can select files via the dropdown list and edit them directly in the editor.</li>
-                                <li>Click on `Save file` to save changes.</li>
-                                <li>Choose a feature and click on `Run feature` to execute it.</li>
+                                    <li>You can select files via the dropdown list and edit them directly in the editor.</li>
+                                    <li>Click on `Save file` to save changes.</li>
+                                    <li>Choose a feature and click on `Run feature` to execute it.</li>
                                 </ul>
-                            </div>
+                            </Alert>
                         </div>
-                    </div> 
+                    </div>
                     <div className="row">
                         <div className="col-1">
                             <label style={{ fontWeight: 500 }}>Select file:</label>
                         </div>
-                        <div className="col-4">
+                        <div className="col-6">
                             <select id="fileselect"
                                 style={{ margin: 5 }}
                                 onChange={this.fileSelectionChanged.bind(this)}>
                                 {fileOptionItems}
                             </select>
                         </div>
-                        <div className="col-8">
+                    </div>
+                    <div className="row">
+                        <div className="col-9">
                             <AceEditor
                                 ref={this.editor}
                                 mode="gherkin"
                                 theme="github"
                                 name="codeDiv"
-                                width="1200px"
+                                width="100%"
                                 maxLines={Infinity}
                                 onChange={this.onFileChange.bind(this)}
                                 value={this.state.code}
@@ -230,36 +233,38 @@ class FeatureHolder extends Component {
                             {saveButton}
                             <button
                                 className="btn btn-primary btn-sm"
-                                disabled={!this.state.ready || 
+                                disabled={!this.state.ready ||
                                     !this.state.selectedFile.endsWith(".feature")}
                                 onClick={this.runFeature.bind(this)}
                             >
                                 Run feature
                             </button>
                         </div>
-                        <div>
-                            <Tabs forceRenderTabPanel={true}
-                                selectedIndex={this.state.selectedTab}
-                                onSelect={this.setTabIndex.bind(this)}>
-                                <TabList>
-                                    <Tab>Test step impl.</Tab>
-                                    <Tab>Console log</Tab>
-                                </TabList>
-                                <TabPanel>
-                                {this.state.showSpinner && (
-                                    <div
-                                        style={{ marginBottom: 4 }}
-                                        className="spinner-border text-primary"
-                                        role="status"
-                                    >
-                                    </div>
-                                    )}
-                                    <Snippets />
-                                </TabPanel>
-                                <TabPanel>
-                                    <SimpleTerminal ref={this.terminal}></SimpleTerminal>
-                                </TabPanel>
-                            </Tabs>
+                        <div className="row">
+                            <div className="col-9">
+                                <Tabs forceRenderTabPanel={true}
+                                    selectedIndex={this.state.selectedTab}
+                                    onSelect={this.setTabIndex.bind(this)}>
+                                    <TabList>
+                                        <Tab>Test step impl.</Tab>
+                                        <Tab>Console log</Tab>
+                                    </TabList>
+                                    <TabPanel>
+                                        {this.state.showSpinner && (
+                                            <div
+                                                style={{ marginBottom: 4 }}
+                                                className="spinner-border text-primary"
+                                                role="status"
+                                            >
+                                            </div>
+                                        )}
+                                        <Snippets />
+                                    </TabPanel>
+                                    <TabPanel>
+                                        <SimpleTerminal ref={this.terminal}></SimpleTerminal>
+                                    </TabPanel>
+                                </Tabs>
+                            </div>
                         </div>
                     </div>
                 </div>

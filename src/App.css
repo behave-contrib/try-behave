@@ -47,3 +47,8 @@ pre code.hljs {
     background-color: #D3D3D3;
     color: black;
 }
+
+ [class*="col-"] {
+  float: left;
+  /* border: 1px solid red; */
+}
