@@ -4,8 +4,9 @@ import config from "./config/config.json"
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
 async function loadPyodideAndPackages() {
-    self.pyodide = await loadPyodide();
+    self.pyodide = await loadPyodide({ stdout: (stdout) => postMessage({ type: "terminal", msg: stdout }) });
 }
+
 let pyodideReadyPromise = loadPyodideAndPackages();
 let behaveReadyPromise = null;
 let loadedFiles = []
@@ -13,21 +14,15 @@ let loadedFiles = []
 const runFeatures = (args) => {
     console.log("Called runFeatures()")
     self.pyodide.runPython(`
-    import sys
-    import io
-    sys.stdout = io.StringIO()
     from behave.__main__ import main as behave_main
     behave_main(${args})
     del behave_main
-    `,{});
-    const stdout = self.pyodide.runPython("sys.stdout.getvalue()");
-    return stdout;
+    `, {});
 }
 
 const getFeatureJson = (feature) => {
     console.log("Feature path: " + feature)
-    const stdout = runFeatures(`["-i", "${feature}", "--f=json", "--no-summary", "--no-snippets"]`);
-    self.pyodide.FS.writeFile("reports/feature.json", stdout);
+    runFeatures(`["-i", "${feature}", "--f=json", "-o=reports/feature.json", "--no-summary", "--no-snippets"]`);
     self.pyodide.runPython(`
     import json
     import ast
@@ -91,7 +86,7 @@ const getFeatureJson = (feature) => {
     snippets = get_snippets()
     global snippet_json
     snippet_json = json.dumps(snippets)
-`,{});
+    `, {});
     const snippet_json = self.pyodide.globals.get("snippet_json");
     return snippet_json;
 }
@@ -128,9 +123,7 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;
-        const stdout = runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`);
-        postMessage({ type: "terminal", msg: stdout });
-
+        runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`);
     }
     if (e.data.type === "snippets") {
         await behaveReadyPromise;
