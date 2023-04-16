@@ -19,6 +19,9 @@ const LogLine = ({id, logText}) => {
         }
     }
     return <p key={id} style={{ marginLeft: margin, marginTop: 2, marginBottom: 0, color: txtcolor }}>{logText}</p>;
+    // return <p key={id} style={{ marginLeft: margin, marginTop: 2, marginBottom: 0, color: txtcolor }}>
+    //     <div dangerouslySetInnerHTML={{__html: logText}}></div>
+    // </p>;
 }
 
 const LogList = ({logLines}) => {

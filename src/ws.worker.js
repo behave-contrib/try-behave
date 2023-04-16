@@ -1,4 +1,6 @@
 import config from "./config/config.json"
+// import Convert from "ansi-to-html"
+
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
@@ -123,7 +125,14 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;
+        // let bytes = []
+        // const options = {isatty: true, raw: (b) => bytes.push(b)}
+        // self.pyodide.setStdout(options)
         runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`);
+        // let feature_output = String.fromCharCode.apply(String, bytes);
+        // const convert = new Convert();
+        // const html_feature_output = convert.toHtml(feature_output)
+        // postMessage({ type: "terminal", msg: html_feature_output })
     }
     if (e.data.type === "snippets") {
         await behaveReadyPromise;
