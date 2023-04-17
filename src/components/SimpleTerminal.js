@@ -2,23 +2,11 @@
 import React, { Component } from "react";
 
 const LogLine = ({id, logText}) => {
-    const gherkinElRegex = /(Feature|Scenario):.*#\s/gm;
-    const stepRegex = /(Given|And\s|Or\s|When|Then).*#\s/gm;
-    const skippedStepRegex = /#\sNone(\s*)$/gm;
     let txtcolor = "white"
     let margin = 5;
-    if (logText.match(gherkinElRegex) !== null){
-        txtcolor = "#91C6FE";
-    }
-    else if (logText.match(stepRegex) !== null) {
-        margin = 50;
-        if (logText.match(skippedStepRegex) !== null) {
-            txtcolor = "yellow";
-        } else {
-            txtcolor = "cyan";
-        }
-    }
-    return <p key={id} style={{ marginLeft: margin, marginTop: 2, marginBottom: 0, color: txtcolor }}>{logText}</p>;
+    return <div key={id} style={{ marginLeft: margin, marginTop: 2, marginBottom: 0, color: txtcolor }}>
+        <div dangerouslySetInnerHTML={{__html: logText}}></div>
+    </div>;
 }
 
 const LogList = ({logLines}) => {

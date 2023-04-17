@@ -9,7 +9,8 @@
                     "features/calculator.feature",
                     "features/steps/calculator_steps.py",
                     "features/steps/test_support.py",
+                    "features/spoken_language.feature",
                     "features/environment.py",
-                    "features/spoken_language.feature"
+                    "features/steps/simple_pretty_formatter.py"
                 ]
 }
