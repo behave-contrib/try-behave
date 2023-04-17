@@ -6,6 +6,7 @@ import Alert from "react-bootstrap/Alert";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
 import "ace-builds/src-noconflict/mode-gherkin";
+import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/theme-github";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
@@ -28,7 +29,8 @@ class FeatureHolder extends Component {
             snippets: [],
             code: "",
             draft: false,
-            showSpinner: true
+            showSpinner: true,
+            code_mode: "gherkin"
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
@@ -128,6 +130,7 @@ class FeatureHolder extends Component {
         if(file.endsWith(".feature")){
             this.worker.postMessage({ type: "snippets", filename: file});
         }
+        this.setState({ code_mode: file.endsWith(".py") ? "python" : "gherkin" });
     }
 
     findModifiedFile(filename) {
@@ -216,7 +219,7 @@ class FeatureHolder extends Component {
                         <div className="col-9">
                             <AceEditor
                                 ref={this.editor}
-                                mode="gherkin"
+                                mode={this.state.code_mode}
                                 theme="github"
                                 name="codeDiv"
                                 width="auto"

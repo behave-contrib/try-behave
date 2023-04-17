@@ -1,5 +1,7 @@
 import config from "./config/config.json"
-// import Convert from "ansi-to-html"
+import Convert from "ansi-to-html"
+import { Subject } from "rxjs"
+import { multicast, buffer, filter } from "rxjs/operators";
 
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
@@ -24,7 +26,7 @@ const runFeatures = (args) => {
 
 const getFeatureJson = (feature) => {
     console.log("Feature path: " + feature)
-    runFeatures(`["-i", "${feature}", "--f=json", "-o=reports/feature.json", "--no-summary", "--no-snippets"]`);
+    runFeatures(`["-i", "${feature}", "-f=json", "-o=reports/feature.json", "--no-summary", "--no-snippets"]`);
     self.pyodide.runPython(`
     import json
     import ast
@@ -125,14 +127,32 @@ self.onmessage = async (e) => {
     }
     if (e.data.type === "run") {
         await behaveReadyPromise;
-        // let bytes = []
-        // const options = {isatty: true, raw: (b) => bytes.push(b)}
-        // self.pyodide.setStdout(options)
-        runFeatures(`["--no-capture", "-i", "${e.data.filename}"]`);
-        // let feature_output = String.fromCharCode.apply(String, bytes);
-        // const convert = new Convert();
-        // const html_feature_output = convert.toHtml(feature_output)
-        // postMessage({ type: "terminal", msg: html_feature_output })
+        const input$ = new Subject();
+        const convert = new Convert();
+        const pipe = input$.pipe(
+            multicast(
+              () => new Subject(),
+              s => s.pipe(
+                filter(v => v !== 10),
+                buffer(s.pipe(filter(v => v === 10))),
+              )
+            )
+          )
+        pipe.subscribe(bytes => {
+            if (bytes.length > 0) {
+                let feature_output = String.fromCharCode.apply(String, bytes);
+                feature_output += "\n";
+                const html_feature_output = convert.toHtml(feature_output);
+                postMessage({ type: "terminal", msg: html_feature_output });
+            }
+          });
+        const options = {isatty: true, raw: (b) => {input$.next(b)}}
+        self.pyodide.setStdout(options)
+        self.pyodide.runPython(`
+        from importlib.machinery import SourceFileLoader
+        module = SourceFileLoader("simple_pretty_formatter", "/home/pyodide/features/steps/simple_pretty_formatter.py").load_module()
+        `);
+        runFeatures(`["-i", "${e.data.filename}", "-f=simple_pretty_formatter:SimplePrettyFormatter"]`);
     }
     if (e.data.type === "snippets") {
         await behaveReadyPromise;
