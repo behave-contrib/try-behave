@@ -140,7 +140,7 @@ self.onmessage = async (e) => {
           )
         pipe.subscribe(bytes => {
             if (bytes.length > 0) {
-                let feature_output = String.fromCharCode.apply(String, bytes);
+                let feature_output = new TextDecoder().decode(new Uint8Array(bytes));
                 feature_output += "\n";
                 const html_feature_output = convert.toHtml(feature_output);
                 postMessage({ type: "terminal", msg: html_feature_output });
