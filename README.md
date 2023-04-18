@@ -25,3 +25,5 @@ The example features, feature step implementations and model classes are Copyrig
 This repository redistributes [r1chardj0n3s/parse](https://github.com/r1chardj0n3s/parse) in binary form. This is needed because the aforementioned project does not distribute a pure Python `py3-none-any.whl` on [pypi](https://pypi.org/) as required for use with Pyodide. The package `r1chardj0n3s/parse` is licensed under the MIT License and Copyright (c) 2012-2019 Richard Jones <richard@python.org>.
 
 `Try Behave`is largely based on James Westfall's [behave-gui](https://github.com/behave-contrib/behave-gui) which is Copyright (c) 2021-present Tomra Systems ASA. The `behave-gui` project is licensed under the MIT License. Copyright notices have been retained at the top of all related files.
+
+See [LICENSE-3RD-PARTY.txt](LICENSE-3RD-PARTY.txt) for more information.
