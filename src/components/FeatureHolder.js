@@ -23,14 +23,15 @@ class FeatureHolder extends Component {
         this.modifiedFiles = []
         this.initializing = false;
         this.state = {
-            selectedFile: config.fileOptions[0],
+            selectedFile: "",
             ready: false,
             selectedTab: 0,
             snippets: [],
             code: "",
             draft: false,
             showSpinner: true,
-            code_mode: "gherkin"
+            code_mode: "gherkin",
+            file_list: []
         }
         this.editor = React.createRef();
         this.terminal = React.createRef();
@@ -102,8 +103,20 @@ class FeatureHolder extends Component {
         this.loadFile();
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         if(!this.initializing) {
+            const url = new URL(window.location.href);
+            const files = url.searchParams.get("files");
+            if (files){
+                const file_list = files.split(",")
+                console.log("URL filter: " + file_list);
+                if (file_list.length > 0) {
+                    const selectedFile = file_list[0]
+                    await this.setState({ file_list: file_list, selectedFile: selectedFile });
+                }
+            } else {
+                await this.setState({ selectedFile: config.fileOptions[0] });
+            }
             this.initializing = true;
             this.init();
         }
@@ -147,7 +160,7 @@ class FeatureHolder extends Component {
         this.setState({ draft: true, code: content });
     }
 
-    saveCode(){
+    saveCode() {
         const existingModifiedFile = this.findModifiedFile(this.state.selectedFile);
         if (existingModifiedFile) {
             existingModifiedFile.content = this.state.code;
@@ -155,6 +168,18 @@ class FeatureHolder extends Component {
             this.modifiedFiles.push({filename: this.state.selectedFile, content: this.state.code});
         }
         this.worker.postMessage({ type: "update_file", filename: this.state.selectedFile, content: this.state.code })
+    }
+
+    getFilteredFiles() {
+        const hasFilter = this.state.file_list.length > 0;
+        let filteredFiles = [];
+        for (const fileName of config.fileOptions) {
+            if (hasFilter && this.state.file_list.indexOf(fileName) === -1) {
+                continue;
+            }
+            filteredFiles.push(fileName);
+        }
+        return filteredFiles;
     }
 
     render() {
@@ -170,7 +195,7 @@ class FeatureHolder extends Component {
             })
         }
 
-        const fileOptionItems = config.fileOptions.map(opt => (
+        const fileOptionItems = this.getFilteredFiles().map(opt => (
             <option key={opt}>{opt}</option>
         ));
         if (this.state.draft) {
