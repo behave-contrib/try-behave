@@ -152,7 +152,7 @@ self.onmessage = async (e) => {
         from importlib.machinery import SourceFileLoader
         module = SourceFileLoader("simple_pretty_formatter", "/home/pyodide/features/steps/simple_pretty_formatter.py").load_module()
         `);
-        runFeatures(`["-i", "${e.data.filename}", "-f=simple_pretty_formatter:SimplePrettyFormatter"]`);
+        runFeatures(`["-i", "${e.data.filename}", "--no-capture", "-f=simple_pretty_formatter:SimplePrettyFormatter"]`);
     }
     if (e.data.type === "snippets") {
         await behaveReadyPromise;
