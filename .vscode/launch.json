@@ -25,6 +25,7 @@
                 // "json",
                 "-i",
                 "${relativeFile}",
+                // "-D continue_after_failed_step"
             ]
         }
     ]

@@ -1,5 +1,3 @@
-# pylint: disable=C0114,C0115
-
 from behave.formatter.pretty import PrettyFormatter
 from behave.textutil import indent
 
