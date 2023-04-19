@@ -3,7 +3,8 @@
 # https://github.com/behave/behave
 # BSD-2-Clause
 
-# pylint: disable=E0401,E0602,E0611,C0114,C0116,E0102,W0613,W0614,W0401
+# pylint: disable=E0602,E0102,W0613,W0614,W0401
+
 from behave import *
 
 

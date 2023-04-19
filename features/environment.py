@@ -1,4 +1,9 @@
-# pylint: disable=E0401,E0602,E0611,C0103,C0114,C0116,E0102,W0212,W0613,W0614,W0401
+# pylint: disable=W0212
+
+def before_scenario(context, scenario):
+    userdata = context.config.userdata
+    if "continue_after_failed_step" in userdata:
+        scenario.continue_after_failed_step = True
 
 def after_all(context):
     context._runner.step_registry.steps["given"] = []

@@ -2,7 +2,7 @@
 # https://github.com/behave/behave.example
 # License: BSD
 
-# pylint: disable=E0401,E0602,E0611,C0103,C0114,C0115,C0116,E0102,W0613,W0614,W0401
+# pylint: disable=E0102,E0611,C0103
 
 from behave import given, register_type, then, when
 

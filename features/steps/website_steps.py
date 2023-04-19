@@ -1,4 +1,4 @@
-# pylint: disable=E0401,E0611,C0114,C0115,C0116,C0411,C0413,E0102,W0613,W0622
+# pylint: disable=E0611,E0102,W0613,W0622,C0411,C0413
 from behave import given, step
 
 
