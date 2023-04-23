@@ -96,7 +96,7 @@ class FeatureHolder extends Component {
                 this.setState({ draft: false });
                 if(this.state.selectedFile.endsWith(".feature")){
                     console.log("post worker msg from `ready`")
-                    this.worker.postMessage({ type: "snippets", filename: this.state.selectedFile});
+                    this.getSnippets(this.state.selectedFile);
                 }
             }
         }
@@ -135,13 +135,17 @@ class FeatureHolder extends Component {
         this.setState({ selectedTab: index })
     }
 
+    getSnippets(file) {
+        this.worker.postMessage({ type: "snippets", filename: file});
+    }
+
     fileSelectionChanged(event) {
         const file = event.target.value;
         this.setState({selectedFile: file})
         this.loadFile(file)
         console.log(`File selection change: ${file}`)
         if(file.endsWith(".feature")){
-            this.worker.postMessage({ type: "snippets", filename: file});
+            this.getSnippets(file);
         }
         this.setState({ code_mode: file.endsWith(".py") ? "python" : "gherkin" });
     }
