@@ -4,8 +4,30 @@ import React, { Component } from "react";
 const LogLine = ({id, logText}) => {
     let txtcolor = "white"
     let margin = 5;
+    const featureRegex = /Feature.*#\s/gm;
+    const scenarioRegex = /Scenario.*#\s/gm;
+    const stepRegex = /(Given|And\s|Or\s|When|Then).*#\s/gm;
+    const summaryRegex = /\d{1,}\sfeature\s/gm;
+
+    if (logText.match(featureRegex)) {
+        logText = logText + "<br /><br />"
+    } else if (logText.match(scenarioRegex)) {
+        logText = "<span>&nbsp;&nbsp;</span>" + logText
+    } else if (logText.match(stepRegex) !== null) {
+        logText = "<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>" + logText
+    }else if (logText.match(summaryRegex) !== null) {
+        logText = "<br />" + logText
+    }
+    let locationText = ""
+    const logParts = logText.split("<span style=\"color:#555\">")
+    if (logParts.length === 2) {
+        logText = logParts[0]
+        locationText = "<span style=\"color:#555\">" + logParts[1]
+    }
+
     return <div key={id} style={{ marginLeft: margin, marginTop: 2, marginBottom: 0, color: txtcolor }}>
-        <div dangerouslySetInnerHTML={{__html: logText}}></div>
+        <span dangerouslySetInnerHTML={{__html: logText}}></span>
+        <span dangerouslySetInnerHTML={{__html: locationText}}></span>
     </div>;
 }
 

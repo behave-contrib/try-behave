@@ -129,12 +129,14 @@ self.onmessage = async (e) => {
         await behaveReadyPromise;
         const input$ = new Subject();
         const convert = new Convert();
+        const lineFeed = 10
         const pipe = input$.pipe(
             multicast(
               () => new Subject(),
               s => s.pipe(
-                filter(v => v !== 10),
-                buffer(s.pipe(filter(v => v === 10))),
+                filter(v => v !== lineFeed),
+                filter(v => v !== lineFeed),
+                buffer(s.pipe(filter(v => v === lineFeed))),
               )
             )
           )
@@ -152,7 +154,7 @@ self.onmessage = async (e) => {
         from importlib.machinery import SourceFileLoader
         module = SourceFileLoader("simple_pretty_formatter", "/home/pyodide/features/steps/simple_pretty_formatter.py").load_module()
         `);
-        runFeatures(`["-i", "${e.data.filename}", "--no-capture", "-f=simple_pretty_formatter:SimplePrettyFormatter"]`);
+        runFeatures(`["-i", "${e.data.filename}", "--no-capture", "-T", "-f=simple_pretty_formatter:SimplePrettyFormatter"]`);
     }
     if (e.data.type === "snippets") {
         await behaveReadyPromise;
