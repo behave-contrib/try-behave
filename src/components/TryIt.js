@@ -1,4 +1,5 @@
 import AceEditor from "react-ace";
+import Alert from "react-bootstrap/Alert";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
 import "ace-builds/src-noconflict/mode-gherkin";
@@ -43,6 +44,19 @@ class TryIt extends FeatureHolder {
                     {this.state.code}
                 </div>
                 <div className="container-fluid" style={{ margin: 5 }}>
+                <div className="row">
+                        <div className="col-9">
+                            <Alert variant="primary" dismissible>
+                                <Alert.Heading>How does it work?</Alert.Heading>
+                                <hr />
+                                <ul>
+                                    <li>You can select files via the dropdown list and edit them directly in the editor.</li>
+                                    <li>Click on `Save file` to save changes.</li>
+                                    <li>Choose a feature and click on `Run feature` to execute it.</li>
+                                </ul>
+                            </Alert>
+                        </div>
+                    </div>
                     <div className="row">
                         <div className="col-1">
                             <label style={{ fontWeight: 500 }}>Select file:</label>
@@ -86,7 +100,9 @@ class TryIt extends FeatureHolder {
                             <span>&nbsp;<button
                                 className="btn btn-light btn-sm"
                                 onClick={this.clearOutput.bind(this)}
-                                style={{ marginTop: 5, marginBottom: 5 }}
+                                style={{ marginTop: 5, 
+                                         marginBottom: 5,
+                                         backgroundColor: "#D3D3D3" }}
                             >
                                 Clear output
                             </button></span>
@@ -94,7 +110,9 @@ class TryIt extends FeatureHolder {
                         </div>
                         <div className="row">
                             <div className="col-9">
-                                <SimpleTerminal ref={this.terminal}></SimpleTerminal>
+                                <SimpleTerminal
+                                    minHeight="150px"
+                                    ref={this.terminal}></SimpleTerminal>
                             </div>
                         </div>
                     </div>

@@ -41,8 +41,7 @@ class SimpleTerminal extends Component {
             color: "white",
             fontFamily: "monospace",
             overflow: "hidden",
-            minHeight: "200px",
-            minWidth: "100px",
+            minHeight: this.props.minHeight || "200px",
             borderRadius: "8px",
             fontSize: 10
         };
