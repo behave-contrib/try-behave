@@ -98,6 +98,8 @@ const getFeatureJson = (feature) => {
 self.onmessage = async (e) => {
     if(e.data.type === "init" & !self.initializing) {
         self.initializing = true;
+        postMessage({ type: "terminal",
+                      msg: "Loading Web assembly Python and Behave. This can take a minute..." });
         await pyodideReadyPromise;
         await self.pyodide.loadPackage("micropip");
         const micropip = self.pyodide.pyimport("micropip");

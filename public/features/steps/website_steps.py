@@ -39,12 +39,6 @@ def step_impl(context):
     context.server = None
 
 
-@step('I verify unauthorised access')
-def step_impl(context):
-    server: TestObject = context.server
-    server.get_user(context.session_id, "phantom")
-
-
 import ipaddress
 import random
 from typing import Dict, List

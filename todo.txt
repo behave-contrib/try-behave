@@ -1,0 +1,7 @@
+[ ] Skriv viktige meldinger til konsolen
+[ ] Pass på at de er bare skrevet til konsolen ́en gang
+[x] Legg til lasting inn spinneren
+[x] Fjern unødig steg i website_steps.py
+[x] File select -> File
+[ ] Vis hjelp tekst når man trykker på hjelp ikonen
+[ ] Få konsolen like store som kodevinduet

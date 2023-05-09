@@ -91,6 +91,7 @@ class FeatureHolder extends Component {
                 this.setState({ snippets: snippets })
                 this.setState({ ready: true })
                 this.setState({ showSpinner: false })
+                this.terminal.current.pushToStdout("Ready!")
             }
             if (e.data.type === "ready"){
                 this.setState({ draft: false });
