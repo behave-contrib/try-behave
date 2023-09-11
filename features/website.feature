@@ -22,7 +22,7 @@ Feature: Website operations
         Then I close server connection
 
     Scenario: Verify operation denied when insufficient privileges
-        And I login with user "phantom" and password "1234567890"
+        Given I login with user "phantom" and password "1234567890"
         When I perform server operation "get_user"
         Then I verify I get "Not authorised" error when I run step:
         """
