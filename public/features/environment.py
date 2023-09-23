@@ -9,4 +9,4 @@ def after_all(context):
     context._runner.step_registry.steps["given"] = []
     context._runner.step_registry.steps["when"] = []
     context._runner.step_registry.steps["then"] = []
-    context._runner.step_registry.steps["steps"] = []
+    context._runner.step_registry.steps["step"] = []
