@@ -4,7 +4,7 @@
   "homepage": "https://behave-contrib.github.io/try-behave",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^13.5.0",
     "ansi-to-html": "^0.7.2",
