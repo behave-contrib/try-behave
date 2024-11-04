@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/try-behave/static/css/main.9becee5b.css",
-    "main.js": "/try-behave/static/js/main.1582b0dc.js",
-    "static/js/496.f0f2d35c.chunk.js": "/try-behave/static/js/496.f0f2d35c.chunk.js",
-    "static/js/904.940724c7.chunk.worker.js": "/try-behave/static/js/904.940724c7.chunk.worker.js",
+    "main.css": "/try-behave/static/css/main.61c6b292.css",
+    "main.js": "/try-behave/static/js/main.5ccf62b1.js",
+    "static/js/496.96c0a5f6.chunk.js": "/try-behave/static/js/496.96c0a5f6.chunk.js",
+    "static/js/608.9d780f72.chunk.worker.js": "/try-behave/static/js/608.9d780f72.chunk.worker.js",
     "index.html": "/try-behave/index.html",
-    "main.9becee5b.css.map": "/try-behave/static/css/main.9becee5b.css.map",
-    "main.1582b0dc.js.map": "/try-behave/static/js/main.1582b0dc.js.map",
-    "496.f0f2d35c.chunk.js.map": "/try-behave/static/js/496.f0f2d35c.chunk.js.map"
+    "main.61c6b292.css.map": "/try-behave/static/css/main.61c6b292.css.map",
+    "main.5ccf62b1.js.map": "/try-behave/static/js/main.5ccf62b1.js.map",
+    "496.96c0a5f6.chunk.js.map": "/try-behave/static/js/496.96c0a5f6.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.9becee5b.css",
-    "static/js/main.1582b0dc.js"
+    "static/css/main.61c6b292.css",
+    "static/js/main.5ccf62b1.js"
   ]
 }
