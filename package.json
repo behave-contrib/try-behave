@@ -2,7 +2,6 @@
   "name": "try-behave",
   "version": "0.1.0",
   "homepage": "https://behave-contrib.github.io/try-behave",
-  "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
