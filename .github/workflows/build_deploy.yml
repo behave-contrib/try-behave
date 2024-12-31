@@ -27,8 +27,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-            ref: 'gh-pages'
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
