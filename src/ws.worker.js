@@ -1,7 +1,7 @@
 import config from "./config/config.json"
 import Convert from "ansi-to-html"
 import { Subject } from "rxjs"
-import { multicast, buffer, filter } from "rxjs/operators";
+import { buffer, filter, share } from "rxjs/operators";
 
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
@@ -128,17 +128,17 @@ self.onmessage = async (e) => {
         await behaveReadyPromise;
         const input$ = new Subject();
         const convert = new Convert();
-        const lineFeed = 10
+        const lineFeed = 10;
         const pipe = input$.pipe(
-            multicast(
-              () => new Subject(),
-              s => s.pipe(
-                filter(v => v !== lineFeed),
-                filter(v => v !== lineFeed),
-                buffer(s.pipe(filter(v => v === lineFeed))),
-              )
-            )
-          )
+          share({
+            connector: () => new Subject(),
+            resetOnError: false,
+            resetOnComplete: false,
+            resetOnRefCountZero: false,
+          }),
+          filter(v => v !== lineFeed),
+          buffer(input$.pipe(filter(v => v === lineFeed))),
+        );
         pipe.subscribe(bytes => {
             if (bytes.length > 0) {
                 let feature_output = new TextDecoder().decode(new Uint8Array(bytes));
@@ -151,7 +151,7 @@ self.onmessage = async (e) => {
         self.pyodide.setStdout(options)
         self.pyodide.runPython(`
         from importlib.machinery import SourceFileLoader
-        module = SourceFileLoader("simple_pretty_formatter", "/home/pyodide/features/steps/simple_pretty_formatter.py").load_module()
+        SourceFileLoader("simple_pretty_formatter", "/home/pyodide/features/steps/simple_pretty_formatter.py").load_module()
         `);
         runFeatures(`["-i", "${e.data.filename}", "--no-capture", "-T", "-f=simple_pretty_formatter:SimplePrettyFormatter"]`);
     }
