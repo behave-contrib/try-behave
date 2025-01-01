@@ -28,9 +28,8 @@ const getFeatureJson = (feature) => {
     console.log("Feature path: " + feature)
     runFeatures(`["-i", "${feature}", "-f=json", "-o=reports/feature.json", "--no-summary", "--no-snippets", "-D", "continue_after_failed_step"]`);
     self.pyodide.runPython(`
-    import json
     import ast
-    import time
+    import json
 
     def get_json_step_report():
         with open("reports/feature.json", "r") as file:
