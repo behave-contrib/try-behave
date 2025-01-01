@@ -17,7 +17,9 @@ class PrettyBox extends PureComponent {
     }
 
     componentDidMount() {
-        hljs.highlightAll();
+        // Stop log spamming about highlighting same element again.
+        // See: https://github.com/highlightjs/highlight.js/issues/3761#issuecomment-2498745244
+        document.querySelectorAll("pre code:not(.hljs)").forEach((block) => { hljs.highlightElement(block); });
     }
 
     render() {
