@@ -1,0 +1,63 @@
+[
+    {
+        "keyword": "Feature",
+        "name": "showing off behave",
+        "tags": [],
+        "location": "public/features/tutorial.feature:6",
+        "status": "passed",
+        "elements": [
+            {
+                "type": "scenario",
+                "keyword": "Scenario",
+                "name": "run a simple test",
+                "tags": [],
+                "location": "public/features/tutorial.feature:8",
+                "steps": [
+                    {
+                        "keyword": "Given",
+                        "step_type": "given",
+                        "name": "we have behave installed",
+                        "location": "public/features/tutorial.feature:9",
+                        "match": {
+                            "location": "public/features/steps/tutorial.py:11",
+                            "arguments": []
+                        },
+                        "result": {
+                            "status": "passed",
+                            "duration": 9.202957153320312e-05
+                        }
+                    },
+                    {
+                        "keyword": "When",
+                        "step_type": "when",
+                        "name": "we implement a test",
+                        "location": "public/features/tutorial.feature:10",
+                        "match": {
+                            "location": "public/features/steps/tutorial.py:15",
+                            "arguments": []
+                        },
+                        "result": {
+                            "status": "passed",
+                            "duration": 5.936622619628906e-05
+                        }
+                    },
+                    {
+                        "keyword": "Then",
+                        "step_type": "then",
+                        "name": "behave will test it for us!",
+                        "location": "public/features/tutorial.feature:11",
+                        "match": {
+                            "location": "public/features/steps/tutorial.py:19",
+                            "arguments": []
+                        },
+                        "result": {
+                            "status": "passed",
+                            "duration": 5.53131103515625e-05
+                        }
+                    }
+                ],
+                "status": "passed"
+            }
+        ]
+    }
+]

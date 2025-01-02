@@ -32,7 +32,7 @@ const getFeatureJson = (feature) => {
     import json
 
     def get_json_step_report():
-        with open("reports/feature.json", "r") as file:
+        with open("reports/feature.json", "r", encoding="utf-8") as file:
             data = file.read()
         return json.loads(data)
 
@@ -40,7 +40,7 @@ const getFeatureJson = (feature) => {
         report = get_json_step_report()
         locations = []
         if len(report) > 0:
-            for element in report[0]["elements"]: 
+            for element in report[0]["elements"]:
                 for step in element["steps"]:
                     if "match" in step:
                         locations.append(step["match"]["location"])
@@ -56,15 +56,16 @@ const getFeatureJson = (feature) => {
             pass
         if node:
             for body in node.body:
-                if type(body) == ast.FunctionDef:
+                if isinstance(body, ast.FunctionDef):
                     step_text = None
                     try:
                         step_text = body.decorator_list[0].args[0].value
-                    except Exception:
+                    except:
                         pass
                     if step_text and step_text in step_decorator:
                         source_snippet = ""
                         for decorator in body.decorator_list:
+                            source_snippet += "@"
                             source_snippet += ast.get_source_segment(file_contents, decorator)
                             source_snippet += "\\n"
                         source_snippet += ast.get_source_segment(file_contents, body)
@@ -77,7 +78,7 @@ const getFeatureJson = (feature) => {
             parts = location.split(":")
             filename = parts[0]
             line_no = parts[1]
-            with open(filename, "r") as source_file:
+            with open(filename, "r", encoding="utf-8") as source_file:
                 file_lines = source_file.readlines()
             step_decorator = file_lines[int(line_no) -1:int(line_no)][0]
             function_source = get_function_source(filename, step_decorator)
@@ -86,9 +87,9 @@ const getFeatureJson = (feature) => {
                 snippets.append({"location": location, "file_lines": function_source})
         return snippets
 
-    snippets = get_snippets()
+    code_snippets = get_snippets()
     global snippet_json
-    snippet_json = json.dumps(snippets)
+    snippet_json = json.dumps(code_snippets)
     `, {});
     const snippet_json = self.pyodide.globals.get("snippet_json");
     return snippet_json;
