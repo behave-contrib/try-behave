@@ -69,15 +69,6 @@ class FeatureHolder extends Component {
         });
     }
 
-    fixKeywords(msg) {
-        const keywords = ["and", "but", "given", "step", "then", "when"];
-        for (const kw in keywords) {
-            let curr_kw = keywords[kw];
-            msg = msg.replaceAll(`${curr_kw}(`, `@${curr_kw}(`);
-        }
-        return msg;
-    }
-
     init() {
         this.worker = new Worker(workerUrl);
         this.terminal.current.clearStdout();
@@ -96,8 +87,7 @@ class FeatureHolder extends Component {
                 }
             }
             if (e.data.type === "snippet") {
-                const msg = this.fixKeywords(e.data.msg);
-                const snippets = JSON.parse(msg);
+                const snippets = JSON.parse(e.data.msg);
                 this.setState({ snippets: snippets })
                 this.setState({ ready: true })
                 this.setState({ showSpinner: false })

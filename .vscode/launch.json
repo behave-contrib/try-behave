@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -14,18 +14,19 @@
         },
         {
             "name": "Python: Behave",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": true,
             "request": "launch",
             "module": "behave",
             "cwd" : "${workspaceFolder}/public/",
             "args": [
-                // "-d",
-                // "-f",
-                // "json",
                 "-i",
                 "${relativeFile}",
-                // "-D continue_after_failed_step"
+                "-f=json",
+                "-o=script/reports/feature.json",
+                "--no-summary",
+                "--no-snippets",
+                "-D", "continue_after_failed_step"
             ]
         }
     ]
