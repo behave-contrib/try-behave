@@ -4,6 +4,7 @@ from behave.runner import Context
 
 
 @step('I verify I get "{error_msg}" error when I run step')
+@step('I verify I get "{error_msg}" error when I run step:')
 def step_impl(context: Context, error_msg):
     actual_error_msg = ""
     try:
