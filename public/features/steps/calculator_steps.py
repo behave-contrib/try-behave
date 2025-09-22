@@ -2,7 +2,7 @@
 # https://github.com/behave/behave.example
 # License: BSD
 
-# pylint: disable=E0102,E0611,C0103
+# pylint: disable=E0102,E0611,E1102,C0103
 
 from behave import given, register_type, then, when
 
@@ -24,15 +24,15 @@ def step_impl(context):
 
 @when('I add "{x:Number}" and "{y:Number}"')
 def step_impl(context, x, y):
-    assert isinstance(x, int)
-    assert isinstance(y, int)
+    assert isinstance(x, int), f"Value x is not an int: {x}"
+    assert isinstance(y, int), f"Value y is not an int: {x}"
     context.calculator.add2(x, y)
     print(f"Result: {context.calculator.result}")
 
 @then('the calculator returns "{expected:Number}"')
 def step_impl(context, expected):
-    assert isinstance(expected, int)
-    assert context.calculator.result == expected
+    assert isinstance(expected, int), f"Expected value is not an int: {expected}"
+    assert context.calculator.result == expected, f"Unexpected result: {context.calculator.result}"
 
 
 # file:features/steps/calculator.py

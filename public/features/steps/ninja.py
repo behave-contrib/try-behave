@@ -2,7 +2,7 @@
 # https://github.com/behave/behave.example
 # License: BSD
 
-# pylint: disable=E0401,E0602,E0611,C0114,C0116,E0102,W0613,W0614,W0401
+# pylint: disable=E0401,E0602,E0611,E1102,C0114,C0116,E0102,W0613,W0614,W0401
 
 from behave import *
 
@@ -15,7 +15,7 @@ def step_the_ninja_encounters_another_opponent(context):
     # -- SETUP/TEARDOWN:
     if hasattr(context, "ninja_fight"):
         # -- VERIFY: Double-call does not occur.
-        assert context.ninja_fight is not None
+        assert context.ninja_fight is not None, "Value for context.ninja_fight should not be None"
     context.ninja_fight = None
 
 @given('the ninja has a {achievement_level}')
@@ -34,7 +34,7 @@ def step_attacked_by(context, opponent):
 def step_the_ninja_should(context, reaction):
     actual_reaction = context.ninja_fight.decision()
     print(f"Reaction: {actual_reaction}")
-    assert reaction == actual_reaction
+    assert reaction == actual_reaction, f"Unexpected reaction: {actual_reaction}"
 
 
 # file:features/steps/ninja_fight.py
@@ -54,8 +54,8 @@ class NinjaFight(object):
         """
         Business logic how a Ninja should react to increase his survival rate.
         """
-        assert self.with_ninja_level is not None
-        assert self.opponent is not None
+        assert self.with_ninja_level is not None, "Value for self.with_ninja_level should not be None"
+        assert self.opponent is not None, "Value for self.opponent should not be None"
         if self.opponent == "Chuck Norris":
             return "run for his life"
         if "black-belt" in self.with_ninja_level:
