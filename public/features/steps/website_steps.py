@@ -1,4 +1,4 @@
-# pylint: disable=E0611,E0102,W0613,W0622,C0411,C0413
+# pylint: disable=E0611,E0102,E1102,W0613,W0622,C0411,C0413
 from behave import given, step
 
 
@@ -24,7 +24,7 @@ def step_impl(context, username, password):
 @step('I verify valid login for "{name}"')
 def step_impl(context, name):
     server: TestObject = context.server
-    assert server.get_user(context.session_id) is not None
+    assert server.get_user(context.session_id) is not None, "Login failed!"
 
 
 @step('I perform server operation "{operation_name}"')

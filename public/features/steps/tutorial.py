@@ -3,7 +3,7 @@
 # https://github.com/behave/behave
 # BSD-2-Clause
 
-# pylint: disable=E0602,E0102,W0613,W0614,W0401
+# pylint: disable=E0602,E0102,E1102,W0613,W0614,W0401
 
 from behave import *
 
@@ -14,8 +14,8 @@ def step_impl(context):
 
 @when('we implement a test')
 def step_impl(context):
-    assert True is not False
+    assert True is not False, "True is not False"
 
 @then('behave will test it for us!')
 def step_impl(context):
-    assert context.failed is False
+    assert context.failed is False, "context.failed is not False"

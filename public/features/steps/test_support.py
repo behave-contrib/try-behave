@@ -1,4 +1,4 @@
-# pylint: disable=E0401,E0611,C0114,C0116,E0102,W0613
+# pylint: disable=E0401,E0611,C0114,C0116,E0102,E1102,W0613,W0718
 from behave import step
 from behave.runner import Context
 
@@ -11,4 +11,4 @@ def step_impl(context: Context, error_msg):
         context.execute_steps(context.text)
     except Exception as ex:
         actual_error_msg = repr(ex)
-    assert error_msg in actual_error_msg
+    assert error_msg in actual_error_msg, f"Term '{error_msg}' not found in actual error message"
