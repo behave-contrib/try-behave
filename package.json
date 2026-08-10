@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "homepage": "https://behave-contrib.github.io/try-behave",
   "dependencies": {
-    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",
     "ansi-to-html": "^0.7.2",
